@@ -16,46 +16,122 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
+
+  /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
 
-/* USER CODE END Includes */
-
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
-void SystemClock_Config(void);
+static void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-/* USER CODE BEGIN PFP */
+static void vF070rb_DeInitAndJump(uint32_t u32JumpAddress);
 
-/* USER CODE END PFP */
+// From https://github.com/viktorvano/STM32-Bootloader/blob/master/STM32F103C8T6_Bootloader/Core/Inc/bootloader.h
+typedef void (application_t)(void);
 
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
+// From https://github.com/viktorvano/STM32-Bootloader/blob/master/STM32F103C8T6_Bootloader/Core/Inc/bootloader.h
+typedef struct
+{
+    uint32_t    stack_addr;     // Stack Pointer
+    application_t*  func_p;        // Program Counter
+} JumpStruct;
 
-/* USER CODE END 0 */
+static void vF070rb_DeInitAndJump(uint32_t u32FwAddress)
+{
+  uint32_t u32VectorAddress = 0;
+
+  uint32_t* pu32FwFlashPointer = (uint32_t*)u32FwAddress;
+  uint32_t* pu32FwRamPointer = (uint32_t*)RAM_VECTOR_TABLE_BEGIN;
+  uint32_t u32FirmwareOffset = u32FwAddress - FLASH_BOOTLOADER_BEGIN;
+  uint32_t u32UnpatchedValue = 0;
+  uint32_t u32PatchedValue = 0;
+
+  // Stop compile nags:
+  u32UnpatchedValue = u32UnpatchedValue;
+  u32PatchedValue = u32PatchedValue;
+
+  // Check if we need to do reset handler relocation. Not 100% accurate because
+  // if original binary reset handler gets pushed back beyond "natural" 0x5000 border, this fails
+  uint32_t u32UnalteredResetAddress = *(pu32FwFlashPointer + 1);
+
+  // Cannot figure out right now what corner case could be
+  if (u32UnalteredResetAddress < FLASH_FIRMWARES_EARLIEST_BEGIN)
+  {
+    // Detected actual firmware, so copy and patch it.
+
+    // Copy vector table first
+    while (pu32FwRamPointer < (uint32_t*)RAM_VECTOR_TABLE_END)
+    {
+      *(pu32FwRamPointer++) = *(pu32FwFlashPointer++);
+    }
+    // Reset is in offset 1
+    // Example
+    // We are given  u32FwAddress = 0x8005000;
+    // Firmware binary thinks it is in 0x8000000 (which is actually bootloader start address)
+    // Offset is 0x8005000 - 0x8000000 eq u32FwAddress - FLASH_BOOTLOADER_BEGIN
+
+    // Patch vector table...
+    pu32FwRamPointer = (uint32_t*)RAM_VECTOR_TABLE_BEGIN;
+    pu32FwRamPointer++; // .. but omit first address, it points to ram
+
+    // Actual patching loop
+    while (pu32FwRamPointer < (uint32_t*)RAM_VECTOR_TABLE_END)
+    {
+      if (*pu32FwRamPointer != 0)
+      {
+        u32UnpatchedValue = *pu32FwRamPointer;
+        *pu32FwRamPointer += u32FirmwareOffset;
+        u32PatchedValue = *pu32FwRamPointer;
+      }
+      pu32FwRamPointer++;
+    }
+    // Firmware patches its own got in assembly upon startup
+
+    // And lets hope for the best
+    u32VectorAddress = RAM_VECTOR_TABLE_BEGIN;
+  }
+  else
+  {
+    u32VectorAddress = u32FwAddress;
+  }
+  // Deinitialization and jump parts from
+  // https://github.com/viktorvano/STM32-Bootloader/blob/master/STM32F103C8T6_Bootloader/Core/Inc/bootloader.h
+  const JumpStruct* pxJumpVector = (JumpStruct*)u32VectorAddress;
+
+  HAL_GPIO_DeInit(LD2_GPIO_Port, LD2_Pin);
+  __HAL_RCC_GPIOC_CLK_DISABLE();
+  __HAL_RCC_GPIOA_CLK_DISABLE();
+  __HAL_RCC_GPIOB_CLK_DISABLE();
+  HAL_RCC_DeInit();
+  HAL_DeInit();
+  __disable_irq();
+
+  // Store firmware offset to r7 (was: r12 but there was some kind of stupid low register requirement)
+  asm ("ldr r7, %0;"
+      :"=m"(u32FirmwareOffset)
+      :
+      :);
+
+  // Store firmware actual address to r6 (was: r11 but there was some kind of stupid low register requirement)
+  asm ("ldr r6, %0;"
+      :"=m"(u32FwAddress)
+      :
+      :);
+
+
+  SysTick->CTRL = 0;
+  SysTick->LOAD = 0;
+  SysTick->VAL = 0;
+
+  // Cortex-M0 has no vector table.
+  // SCB->VTOR = u32VectorAddress;
+  // But we can remap memory
+  __HAL_SYSCFG_REMAPMEMORY_SRAM();
+
+  // Actual jump
+  asm("msr msp, %0; bx %1;" : : "r"(pxJumpVector->stack_addr), "r"(pxJumpVector->func_p));
+}
+
 
 /**
   * @brief  The application entry point.
@@ -79,16 +155,12 @@ int main(void)
   // Leave LED off
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
   // Deinit and jump
+  vF070rb_DeInitAndJump(0x8005000);
 
 
-  // But not yet, haha
   while (1)
   {
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
   }
-  /* USER CODE END 3 */
 }
 
 /**

@@ -54,8 +54,7 @@ SECTIONS
     . = ALIGN(4);
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
-  } >FLASH
-  /* } >RAM AT> FLASH */
+  } >RAM AT> FLASH
   
 	/* GOT sections taken from https://github.com/rgujju/STM32-projects/blob/master/got_plt/stm32_linker.ld */
   .got :
@@ -64,16 +63,14 @@ SECTIONS
     _got_start_ram = .;
     *(.got)
     _got_end_ram = .;
-  } >FLASH
-  /* } >RAM AT> FLASH */
+  } >RAM AT> FLASH
     
   .got.plt :
   {
     . = ALIGN(4);
     *(.got.plt)
     /* _edata = .; */
-  } >FLASH
-  /* } >RAM AT> FLASH */
+  } >RAM AT> FLASH
   
   /* The program code and other data into "FLASH" Rom type memory */
   .text :
