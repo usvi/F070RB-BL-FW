@@ -2262,6 +2262,10 @@ LOAD c:/st/stm32cubeide_1.6.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.exte
                 0x0000000020004000                _estack = (ORIGIN (RAM) + LENGTH (RAM))
                 0x0000000000000200                _Min_Heap_Size = 0x200
                 0x0000000000000400                _Min_Stack_Size = 0x400
+                0x0000000020000000                _ram_start = ORIGIN (RAM)
+                0x0000000020004000                _ram_end = (ORIGIN (RAM) + LENGTH (RAM))
+                0x0000000008000000                _flash_start = ORIGIN (FLASH)
+                0x0000000008020000                _flash_end = (ORIGIN (FLASH) + LENGTH (FLASH))
 
 .isr_vector     0x0000000008000000       0xc0
                 0x0000000008000000                . = ALIGN (0x4)
@@ -2269,6 +2273,16 @@ LOAD c:/st/stm32cubeide_1.6.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.exte
  .isr_vector    0x0000000008000000       0xc0 Core/Startup/startup_stm32f070rbtx.o
                 0x0000000008000000                g_pfnVectors
                 0x00000000080000c0                . = ALIGN (0x4)
+
+.got            0x00000000080000c0        0x0
+                0x00000000080000c0                . = ALIGN (0x4)
+                0x00000000080000c0                _got_start_ram = .
+ *(.got)
+                0x00000000080000c0                _got_end_ram = .
+
+.got.plt        0x00000000080000c0        0x0
+                0x00000000080000c0                . = ALIGN (0x4)
+ *(.got.plt)
 
 .text           0x00000000080000c0     0x127c
                 0x00000000080000c0                . = ALIGN (0x4)
