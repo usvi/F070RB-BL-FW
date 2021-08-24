@@ -50,18 +50,28 @@ defined in linker script */
   .type Reset_Handler, %function
 Reset_Handler:
   ldr   r0, =_estack
-  mov   sp, r0          /* set stack pointer */
+  msr   msp, r0          /* set stack pointer */
+  msr   psp, r0          /* set stack pointer */
 
-	// Store r7 passed by bootloader as gu32FirmwareOffset (earlier: r12)
+	// Store r6 passed by bootloader as gu32FirmwareOffset (earlier: r12)
 	ldr r2, =gu32FirmwareOffset
-	str r7, [r2]
-	// Store r6 passed by bootloader as gu32FirmwareAbsPosition (earlier r11)
-	ldr r2, =gu32FirmwareAbsPosition
 	str r6, [r2]
-	movs r2, #0
-	// Lets leave offset to r7 and abs to r6
+	// Store r5 passed by bootloader as gu32FirmwareAbsPosition (earlier r11)
+	ldr r2, =gu32FirmwareAbsPosition
+	str r5, [r2]
+	movs r2, #0 // Cleanup
+	movs r5, #0
+	movs r6, #0
+
+
+
+
+
+
 
 GotPatchLoopInit:
+	ldr r6, =gu32FirmwareOffset // Get firmware offset variable address
+	ldr r6, [r6]
 	movs r0, #0 // Loop variable
 GotPatchLoopCond:
 	ldr r1, = _got_start_ram
@@ -76,7 +86,7 @@ GotPatchLoopBody:
 	ldr r3, = _ram_start // Load actual ram start
 	subs r2, r2, r3 // r2 now has plain got offset from where ever
 	ldr r3, = _flash_start // Start to assemble flash position
-	adds r3, r3, r7 // Add firmware offset, which is still at r7
+	adds r3, r3, r6 // Add firmware offset, which is still at r6
 	adds r3, r3, r2 // Add plain offset
 	adds r3, r3, r1 // Add loop offset to reading from flash
 	ldr r3, [r3] // Load actual table data from flash
@@ -89,7 +99,7 @@ GotPatchLoopBody:
 	ldr r4, =_flash_start // Assemble limit to check if under start of flash, in which case something is just wrong, so branch to store and hope for the best
 	cmp r3, r4 // Compare address from got and start of flash
 	blo GotStoreTableAddressToRam // If address address lower (lo) than start of flash, branch to store got table address data and hope for the best
-	adds r3, r3, r7 // Finally a position in flash. Add the offset.
+	adds r3, r3, r6 // Finally a position in flash. Add the offset.
 GotStoreTableAddressToRam:
 	ldr r4, =_ram_start// Start getting address in ram where to put the table address value
 	adds r4, r4, r2 // Add plain offset of got
@@ -211,12 +221,14 @@ CallPreinitsEnd:
 
 	// r4, r5 untouched or good, hopefully
 CallInitsInit:
+	ldr r7, =gu32FirmwareOffset
+	ldr r7, [r7]
 CallInitsLoopCond:
 	cmp r5, r4
 	beq CallInitsEnd
 CallInitsLoop:
 	ldr r3, [r5]
-	add r3, r3, r12
+	add r3, r3, r7
 	blx r3
 	adds r5, r5, #4
 	b CallInitsLoopCond

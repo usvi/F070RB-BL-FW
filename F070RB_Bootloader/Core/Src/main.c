@@ -96,7 +96,7 @@ static void vF070rb_DeInitAndJump(uint32_t u32FwAddress)
   }
   // Deinitialization and jump parts from
   // https://github.com/viktorvano/STM32-Bootloader/blob/master/STM32F103C8T6_Bootloader/Core/Inc/bootloader.h
-  const JumpStruct* pxJumpVector = (JumpStruct*)u32VectorAddress;
+  const JumpStruct* pxJumpVector = ((JumpStruct*)(u32VectorAddress));
 
   HAL_GPIO_DeInit(LD2_GPIO_Port, LD2_Pin);
   __HAL_RCC_GPIOC_CLK_DISABLE();
@@ -106,17 +106,6 @@ static void vF070rb_DeInitAndJump(uint32_t u32FwAddress)
   HAL_DeInit();
   __disable_irq();
 
-  // Store firmware offset to r7 (was: r12 but there was some kind of stupid low register requirement)
-  asm ("ldr r7, %0;"
-      :"=m"(u32FirmwareOffset)
-      :
-      :);
-
-  // Store firmware actual address to r6 (was: r11 but there was some kind of stupid low register requirement)
-  asm ("ldr r6, %0;"
-      :"=m"(u32FwAddress)
-      :
-      :);
 
 
   SysTick->CTRL = 0;
@@ -127,9 +116,25 @@ static void vF070rb_DeInitAndJump(uint32_t u32FwAddress)
   // SCB->VTOR = u32VectorAddress;
   // But we can remap memory
   __HAL_SYSCFG_REMAPMEMORY_SRAM();
+  __DMB();
+
+  // Store firmware offset to r6 (was: r12 but there was some kind of stupid low register requirement)
+  asm ("ldr r6, %0;"
+      :"=m"(u32FirmwareOffset)
+      :
+      :);
+
+  // Store firmware actual address to r5 (was: r11 but there was some kind of stupid low register requirement)
+  asm ("ldr r5, %0;"
+      :"=m"(u32FwAddress)
+      :
+      :);
 
   // Actual jump
-  asm("msr msp, %0; bx %1;" : : "r"(pxJumpVector->stack_addr), "r"(pxJumpVector->func_p));
+  //asm("msr msp, %0; msr psp, %0; ldr r1, [%1]; bx r1;" : : "r"(pxJumpVector->stack_addr), "r"(pxJumpVector->func_p - 1));
+  asm("msr msp, %0; msr psp, %0; bx %1;" : : "r"(pxJumpVector->stack_addr), "r"(pxJumpVector->func_p));
+
+
 }
 
 
