@@ -52,41 +52,196 @@ Reset_Handler:
   ldr   r0, =_estack
   mov   sp, r0          /* set stack pointer */
 
+	// Store r7 passed by bootloader as gu32FirmwareOffset (earlier: r12)
+	ldr r2, =gu32FirmwareOffset
+	str r7, [r2]
+	// Store r6 passed by bootloader as gu32FirmwareAbsPosition (earlier r11)
+	ldr r2, =gu32FirmwareAbsPosition
+	str r6, [r2]
+	movs r2, #0
+	// Lets leave offset to r7 and abs to r6
+
+GotPatchLoopInit:
+	movs r0, #0 // Loop variable
+GotPatchLoopCond:
+	ldr r1, = _got_start_ram
+	ldr r2, = _got_end_ram
+	subs r2, r2, r1 // How many bytes is the lenght
+	cmp r0, r2 // Check if loop is at end
+	beq GotPatchEnd // Jump to end if compare equal
+GotPatchLoopBody:
+	movs r1, r0 // Copy original loop counter value to r1
+	adds r0, r0, #4 // Increase original loop counter r0
+	ldr r2, = _got_start_ram // Load got ram start
+	ldr r3, = _ram_start // Load actual ram start
+	subs r2, r2, r3 // r2 now has plain got offset from where ever
+	ldr r3, = _flash_start // Start to assemble flash position
+	adds r3, r3, r7 // Add firmware offset, which is still at r7
+	adds r3, r3, r2 // Add plain offset
+	adds r3, r3, r1 // Add loop offset to reading from flash
+	ldr r3, [r3] // Load actual table data from flash
+	ldr r4, =_ram_start // Assemble limit to check if over start of ram, in which case don't modify (it is ram or a peripheral)
+	cmp r3, r4 // Compare address from got and start of ram
+	bhs GotStoreTableAddressToRam // If address higher or same (hs) than start of ram, branch to copy got address as is
+	ldr r4, =_flash_end // Assemble limit to check if over end of flash, in which case something is just wrong, so branch to store and hope for the best
+	cmp r3, r4 // Compare address from got and end of flash
+	bhs GotStoreTableAddressToRam // If address address higher or same (hs) than end of flash, branch to store got table address data and hope for the best
+	ldr r4, =_flash_start // Assemble limit to check if under start of flash, in which case something is just wrong, so branch to store and hope for the best
+	cmp r3, r4 // Compare address from got and start of flash
+	blo GotStoreTableAddressToRam // If address address lower (lo) than start of flash, branch to store got table address data and hope for the best
+	adds r3, r3, r7 // Finally a position in flash. Add the offset.
+GotStoreTableAddressToRam:
+	ldr r4, =_ram_start// Start getting address in ram where to put the table address value
+	adds r4, r4, r2 // Add plain offset of got
+	adds r4, r4, r1 // Add the original loop counter (is: 0, 4, 8, 12, ...)
+	str r3, [r4] // Add the table address to ram
+	b GotPatchLoopCond // And go to check the loop
+GotPatchEnd:
+	ldr r0, =_got_start_ram
+	mov r9, r0 // Stupid trick to put global offset table location to r9
+	movs r0, 0 // Cleaning up the rest, just in case
+	movs r1, 0
+	movs r2, 0
+	movs r3, 0
+	movs r4, 0
+	movs r5, 0
+	movs r6, 0
+	movs r7, 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* Copy the data segment initializers from flash to SRAM */
-  ldr r0, =_sdata
-  ldr r1, =_edata
-  ldr r2, =_sidata
-  movs r3, #0
-  b LoopCopyDataInit
+  movs	r1, #0
+  b	LoopCopyDataInit
 
 CopyDataInit:
-  ldr r4, [r2, r3]
-  str r4, [r0, r3]
-  adds r3, r3, #4
+	ldr r7, =gu32FirmwareOffset
+	ldr r7, [r7]
+	ldr	r3, =_sidata
+	adds r3, r3, r7
+	ldr	r3, [r3, r1]
+	str	r3, [r0, r1]
+	adds	r1, r1, #4
 
 LoopCopyDataInit:
-  adds r4, r0, r3
-  cmp r4, r1
-  bcc CopyDataInit
-  
+	ldr	r0, =_sdata
+	ldr	r3, =_edata
+	adds	r2, r0, r1
+	cmp	r2, r3
+	bcc	CopyDataInit
+	ldr	r2, =_sbss
+	adds r2, r2, r7
+	b	LoopFillZerobss
 /* Zero fill the bss segment. */
-  ldr r2, =_sbss
-  ldr r4, =_ebss
-  movs r3, #0
-  b LoopFillZerobss
-
 FillZerobss:
-  str  r3, [r2]
-  adds r2, r2, #4
+	movs	r3, #0
+	adds r2, r2, #4 // Increment the loop counter already so ww avoid non-ending loops
+	ldr r4, =gu32FirmwareOffset // Get firmware offset variable address
+	cmp r2, r4 // Compare address to the address we are going to zero
+	beq LoopFillZerobss // Jump away if would otherwise zero it
+	ldr r4, =gu32FirmwareAbsPosition // Get firmware abs position variable address
+	cmp r2, r4 // Compare address to the address we are going to zero
+	beq LoopFillZerobss // Jump away if would otherwise zero it
+	subs r2, r2, #4 // Remove our own increment which was needed for special cases
+	str	r3, [r2]
+	adds r2, #4
 
 LoopFillZerobss:
-  cmp r2, r4
-  bcc FillZerobss
+	ldr r7, =gu32FirmwareOffset
+	ldr r7, [r7]
+	ldr	r3, =_ebss
+	cmp	r2, r3
+	bcc	FillZerobss
+
+
+
+
 
 /* Call the clock system intitialization function.*/
   bl  SystemInit
-/* Call static constructors */
-  bl __libc_init_array
+
+
+
+
+// Make our own __libc_init_array
+CallPreinitsInit:
+	ldr r7, =gu32FirmwareOffset
+	ldr r7, [r7]
+	ldr r0, =__preinit_array_start
+	adds r0, r7
+	ldr r1, =__preinit_array_end
+	adds r1, r7
+CallPreinitsLoopCond:
+	cmp r0, r1
+	beq CallPreinitsEnd// If same, it is at end, go away
+CallPreinitsLoop:
+	ldr r5, =__init_array_start
+	ldr r4, =__init_array_end // Yes, order is funny to say the least
+	ldr r3, [r0]
+	blx r3
+	adds r0, r0, #4
+	b CallPreinitsLoopCond
+CallPreinitsEnd:
+
+	ldr r3, =_init
+	adds r3, r7
+	ldr r5, =__init_array_start
+	adds r5, r7
+	ldr r4, =__init_array_end
+	adds r4, r7
+	blx r3
+
+	// r4, r5 untouched or good, hopefully
+CallInitsInit:
+CallInitsLoopCond:
+	cmp r5, r4
+	beq CallInitsEnd
+CallInitsLoop:
+	ldr r3, [r5]
+	add r3, r3, r12
+	blx r3
+	adds r5, r5, #4
+	b CallInitsLoopCond
+CallInitsEnd:
+	movs r0, #0
+	movs r1, #0
+	movs r2, #0
+	movs r3, #0
+	movs r4, #0
+	movs r5, #0
+	movs r6, #0
+	movs r7, #0
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* Call the application's entry point.*/
   bl main
 
