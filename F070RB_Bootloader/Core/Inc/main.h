@@ -30,25 +30,11 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f0xx_hal.h"
 
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
-
-/* Exported types ------------------------------------------------------------*/
-/* USER CODE BEGIN ET */
-
-/* USER CODE END ET */
-
-/* Exported constants --------------------------------------------------------*/
-/* USER CODE BEGIN EC */
-
-/* USER CODE END EC */
-
-/* Exported macro ------------------------------------------------------------*/
-/* USER CODE BEGIN EM */
-
-/* USER CODE END EM */
+extern uint32_t __ram_vector_table_begin;
+extern uint32_t __ram_vector_table_end;
+extern uint32_t __ram_got_plt_begin;
+extern uint32_t __flash_bootloader_begin;
+extern uint32_t __flash_firmwares_earliest_begin;
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
@@ -74,9 +60,13 @@ void Error_Handler(void);
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14
 #define TCK_GPIO_Port GPIOA
-/* USER CODE BEGIN Private defines */
 
-/* USER CODE END Private defines */
+// Helper defines for addresses
+#define RAM_VECTOR_TABLE_BEGIN ((uint32_t)(&__ram_vector_table_begin)) /* Basically 0x20000000 */
+#define RAM_VECTOR_TABLE_END ((uint32_t)(&__ram_vector_table_end)) /* Dynamically from linker so we don't need to guessa about variants. */
+#define RAM_GOT_PLT_BEGIN ((uint32_t)(&__ram_got_plt_begin)) /* Dynamically from linker so we don't need to guessa about variants. */
+#define FLASH_BOOTLOADER_BEGIN ((uint32_t)(&__flash_bootloader_begin)) /* Basically 0x8000000 */
+#define FLASH_FIRMWARES_EARLIEST_BEGIN ((uint32_t)(&__flash_firmwares_earliest_begin)) /* Basically 0x8005000 */
 
 #ifdef __cplusplus
 }
