@@ -39,6 +39,7 @@ int main(void)
   uint32_t u32LedCounter = 0;
   HAL_Init();
   SystemClock_Config();
+  __enable_irq();
   MX_GPIO_Init();
 
   while (1)
