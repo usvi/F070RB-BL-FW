@@ -115,8 +115,9 @@ static void vF070rb_DeInitAndJump(uint32_t u32FwAddress)
   // Cortex-M0 has no vector table.
   // SCB->VTOR = u32VectorAddress;
   // But we can remap memory
-  __HAL_SYSCFG_REMAPMEMORY_SRAM();
-  __DMB();
+  // Lets put it to firmware side
+  //__HAL_SYSCFG_REMAPMEMORY_SRAM();
+  //__DMB();
 
   // Store firmware offset to r6 (was: r12 but there was some kind of stupid low register requirement)
   asm ("ldr r6, %0;"

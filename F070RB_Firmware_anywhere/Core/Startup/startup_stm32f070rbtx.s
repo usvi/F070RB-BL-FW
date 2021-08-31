@@ -210,7 +210,6 @@ CallPreinitsLoop:
 	adds r0, r0, #4
 	b CallPreinitsLoopCond
 CallPreinitsEnd:
-
 	ldr r3, =_init
 	adds r3, r7
 	ldr r5, =__init_array_start

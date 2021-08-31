@@ -127,6 +127,8 @@ const uint8_t APBPrescTable[8]  = {0, 0, 0, 0, 1, 2, 3, 4};
   */
 void SystemInit(void)
 {
+  __HAL_SYSCFG_REMAPMEMORY_SRAM();
+  __DMB();
   /* NOTE :SystemInit(): This function is called at startup just after reset and 
                          before branch to main program. This call is made inside
                          the "startup_stm32f0xx.s" file.

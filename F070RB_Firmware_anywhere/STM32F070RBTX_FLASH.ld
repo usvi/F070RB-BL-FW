@@ -69,7 +69,6 @@ SECTIONS
   {
     . = ALIGN(4);
     *(.got.plt)
-    /* _edata = .; */
   } >RAM AT> FLASH
   
   /* The program code and other data into "FLASH" Rom type memory */
