@@ -98,16 +98,14 @@ static void vF070rb_DeInitAndJump(uint32_t u32FwAddress)
   // https://github.com/viktorvano/STM32-Bootloader/blob/master/STM32F103C8T6_Bootloader/Core/Inc/bootloader.h
   const JumpStruct* pxJumpVector = ((JumpStruct*)(u32VectorAddress));
 
-  //__disable_irq();
+  __disable_irq();
 
-  //HAL_GPIO_DeInit(LD2_GPIO_Port, LD2_Pin);
-  //__HAL_RCC_GPIOC_CLK_DISABLE();
-  //__HAL_RCC_GPIOA_CLK_DISABLE();
-  //__HAL_RCC_GPIOB_CLK_DISABLE();
-  //HAL_RCC_DeInit();
-  //HAL_DeInit();
-
-
+  HAL_GPIO_DeInit(LD2_GPIO_Port, LD2_Pin);
+  __HAL_RCC_GPIOC_CLK_DISABLE();
+  __HAL_RCC_GPIOA_CLK_DISABLE();
+  __HAL_RCC_GPIOB_CLK_DISABLE();
+  HAL_RCC_DeInit();
+  HAL_DeInit();
 
   SysTick->CTRL = 0;
   SysTick->LOAD = 0;
@@ -133,9 +131,6 @@ static void vF070rb_DeInitAndJump(uint32_t u32FwAddress)
       :);
 
   // Actual jump
-  //asm("msr msp, %0; msr psp, %0; ldr r1, [%1]; bx r1;" : : "r"(pxJumpVector->stack_addr), "r"(pxJumpVector->func_p - 1));
-  //asm("msr msp, %0; msr psp, %0; bx %1;" : : "r"(pxJumpVector->stack_addr), "r"(pxJumpVector->func_p));
-
   asm("mov sp, %0; bx %1;" : : "r"(pxJumpVector->stack_addr), "r"(pxJumpVector->func_p));
 
 }

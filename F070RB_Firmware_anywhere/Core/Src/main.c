@@ -38,12 +38,12 @@ static void MX_TIM16_Init(void);
   */
 int main(void)
 {
-  //HAL_Init();
-  //SystemClock_Config();
-  //MX_GPIO_Init();
+  HAL_Init();
+  SystemClock_Config();
+  MX_GPIO_Init();
   MX_TIM16_Init();
   HAL_TIM_Base_Start_IT(&htim16);
-  //__enable_irq();
+  __enable_irq();
 
   while (1)
   {
@@ -110,10 +110,13 @@ static void MX_TIM16_Init(void)
   htim16.Instance = TIM16;
   htim16.Init.Prescaler = 48000 - 1;
   htim16.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim16.Init.Period = 2000;
+  htim16.Init.Period = 1000;
   htim16.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim16.Init.RepetitionCounter = 0;
   htim16.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+
+  HAL_TIM_Base_DeInit(&htim16);
+
   if (HAL_TIM_Base_Init(&htim16) != HAL_OK)
   {
     Error_Handler();
