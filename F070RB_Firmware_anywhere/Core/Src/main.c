@@ -26,9 +26,11 @@
 uint32_t gu32FirmwareOffset;
 uint32_t gu32FirmwareAbsPosition;
 
+TIM_HandleTypeDef htim16;
+
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-
+static void MX_TIM16_Init(void);
 
 /**
   * @brief  The application entry point.
@@ -36,21 +38,15 @@ static void MX_GPIO_Init(void);
   */
 int main(void)
 {
-  uint32_t u32LedCounter = 0;
-  HAL_Init();
-  SystemClock_Config();
-  __enable_irq();
-  MX_GPIO_Init();
+  //HAL_Init();
+  //SystemClock_Config();
+  //MX_GPIO_Init();
+  MX_TIM16_Init();
+  HAL_TIM_Base_Start_IT(&htim16);
+  //__enable_irq();
 
   while (1)
   {
-    u32LedCounter++;
-
-    if ((u32LedCounter % 0xA0000) == 0)
-    {
-      u32LedCounter = 0;
-      HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-    }
   }
 }
 
@@ -90,6 +86,60 @@ void SystemClock_Config(void)
     Error_Handler();
   }
 }
+
+
+
+
+
+
+/**
+  * @brief TIM16 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM16_Init(void)
+{
+
+  /* USER CODE BEGIN TIM16_Init 0 */
+
+  /* USER CODE END TIM16_Init 0 */
+
+  /* USER CODE BEGIN TIM16_Init 1 */
+
+  /* USER CODE END TIM16_Init 1 */
+  htim16.Instance = TIM16;
+  htim16.Init.Prescaler = 48000 - 1;
+  htim16.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim16.Init.Period = 2000;
+  htim16.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim16.Init.RepetitionCounter = 0;
+  htim16.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim16) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM16_Init 2 */
+
+  /* USER CODE END TIM16_Init 2 */
+
+}
+
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  if (htim == &htim16)
+  {
+    HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+  }
+
+}
+
+
+
+
+
+
+
 
 /**
   * @brief GPIO Initialization Function
