@@ -47,6 +47,8 @@
 
 #include "stm32f0xx.h"
 
+#include "main.h"
+
 /**
   * @}
   */
@@ -120,13 +122,48 @@ const uint8_t APBPrescTable[8]  = {0, 0, 0, 0, 1, 2, 3, 4};
   * @{
   */
 
-/**
-  * @brief  Setup the microcontroller system
-  * @param  None
-  * @retval None
-  */
+extern uint32_t __ram_vector_table_begin;
+extern uint32_t __ram_vector_table_end;
+
+extern uint32_t gu32FlashBegin;
+extern uint32_t gu32FirmwareOffset;
+extern uint32_t gu32FirmwareAbsPosition;
+
+
 void SystemInit(void)
 {
+  uint32_t u32RamVectorTableBegin = ((uint32_t)(&__ram_vector_table_begin));
+  uint32_t u32RamVectorTableEnd = ((uint32_t)(&__ram_vector_table_end));
+
+  uint32_t u32FlashBegin = gu32FlashBegin;
+  uint32_t u32FirmwareOffset = gu32FirmwareOffset;
+  uint32_t u32FirmwareAbsPosition = gu32FirmwareAbsPosition;
+
+  uint32_t* pu32FwFlashPointer = (uint32_t*)u32FirmwareAbsPosition;
+  uint32_t* pu32FwRamPointer = (uint32_t*)u32RamVectorTableBegin;
+  uint32_t u32TableValue = 0;
+
+  // Vector table goes always to ram now from flash
+
+  // First is stack address, copy verbatim
+  (*(pu32FwRamPointer++)) = (*(pu32FwFlashPointer++));
+
+  while (pu32FwRamPointer < ((uint32_t*)u32RamVectorTableEnd))
+  {
+    // Get the value first
+    u32TableValue = (*(pu32FwFlashPointer++));
+
+    // Only patch values pointing to flash, just in case
+    if (u32TableValue >= u32FlashBegin)
+    {
+      u32TableValue += u32FirmwareOffset;
+    }
+
+    // And finally, put the value to ram
+    (*(pu32FwRamPointer++)) = u32TableValue;
+  }
+
+  __DMB();
   __HAL_SYSCFG_REMAPMEMORY_SRAM();
   __DMB();
   /* NOTE :SystemInit(): This function is called at startup just after reset and 

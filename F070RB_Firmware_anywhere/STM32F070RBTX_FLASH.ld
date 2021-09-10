@@ -40,37 +40,38 @@ MEMORY
   FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 128K
 }
 
-_ram_start = ORIGIN(RAM) ;
-_ram_end = ORIGIN(RAM) + LENGTH(RAM) ;
-_flash_start = ORIGIN(FLASH) ;
-_flash_end = ORIGIN(FLASH) + LENGTH(FLASH);
+__ram_begin = ORIGIN(RAM) ;
+__ram_end = ORIGIN(RAM) + LENGTH(RAM) ;
+__flash_begin = ORIGIN(FLASH) ;
+__flash_end = ORIGIN(FLASH) + LENGTH(FLASH);
 
 /* Sections */
 SECTIONS
 {
-  /* The startup code into "FLASH" Rom type memory */
+  /* Vector table and GOT at RAM, must be loaded by ourselves from flash. */
   .isr_vector :
   {
-    . = ALIGN(4);
-    KEEP(*(.isr_vector)) /* Startup code */
+    . = ALIGN(256);
+    __ram_vector_table_begin = . ;
+    KEEP(*(.isr_vector))
+    __ram_vector_table_end = . ;
     . = ALIGN(4);
   } >RAM AT> FLASH
+  /*  Check how LOADADDR behaves after we but stuff in the beginning */
+  __flash_vector_table_begin = LOADADDR(.isr_vector) ;
+  __flash_vector_table_end = __flash_vector_table_begin + __ram_vector_table_end - __ram_vector_table_begin ;
   
 	/* GOT sections taken from https://github.com/rgujju/STM32-projects/blob/master/got_plt/stm32_linker.ld */
   .got :
   {
     . = ALIGN(4);
-    _got_start_ram = .;
+    __ram_got_begin = . ;
     *(.got)
-    _got_end_ram = .;
+    __ram_got_end = . ;
   } >RAM AT> FLASH
-    
-  .got.plt :
-  {
-    . = ALIGN(4);
-    *(.got.plt)
-  } >RAM AT> FLASH
-  
+  __flash_got_begin = LOADADDR(.got) ;
+  __flash_got_end = __flash_got_begin + __ram_got_end - __ram_got_begin;
+      
   /* The program code and other data into "FLASH" Rom type memory */
   .text :
   {

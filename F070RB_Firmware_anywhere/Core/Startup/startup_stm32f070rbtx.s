@@ -59,6 +59,10 @@ Reset_Handler:
 	// Store r5 passed by bootloader as gu32FirmwareAbsPosition (earlier r11)
 	ldr r2, =gu32FirmwareAbsPosition
 	str r5, [r2]
+	// Force flash begin address to global variable
+	ldr r2, =gu32FlashBegin;
+	ldr r5, =__flash_begin
+	str r5, [r2]
 	movs r2, #0 // Cleanup
 	movs r5, #0
 	movs r6, #0
@@ -74,40 +78,40 @@ GotPatchLoopInit:
 	ldr r6, [r6]
 	movs r0, #0 // Loop variable
 GotPatchLoopCond:
-	ldr r1, = _got_start_ram
-	ldr r2, = _got_end_ram
+	ldr r1, = __ram_got_begin
+	ldr r2, = __ram_got_end
 	subs r2, r2, r1 // How many bytes is the lenght
 	cmp r0, r2 // Check if loop is at end
 	beq GotPatchEnd // Jump to end if compare equal
 GotPatchLoopBody:
 	movs r1, r0 // Copy original loop counter value to r1
 	adds r0, r0, #4 // Increase original loop counter r0
-	ldr r2, = _got_start_ram // Load got ram start
-	ldr r3, = _ram_start // Load actual ram start
+	ldr r2, = __ram_got_begin // Load got ram start
+	ldr r3, = __ram_begin // Load actual ram start
 	subs r2, r2, r3 // r2 now has plain got offset from where ever
-	ldr r3, = _flash_start // Start to assemble flash position
+	ldr r3, = __flash_begin // Start to assemble flash position
 	adds r3, r3, r6 // Add firmware offset, which is still at r6
 	adds r3, r3, r2 // Add plain offset
 	adds r3, r3, r1 // Add loop offset to reading from flash
 	ldr r3, [r3] // Load actual table data from flash
-	ldr r4, =_ram_start // Assemble limit to check if over start of ram, in which case don't modify (it is ram or a peripheral)
+	ldr r4, =__ram_begin // Assemble limit to check if over start of ram, in which case don't modify (it is ram or a peripheral)
 	cmp r3, r4 // Compare address from got and start of ram
 	bhs GotStoreTableAddressToRam // If address higher or same (hs) than start of ram, branch to copy got address as is
-	ldr r4, =_flash_end // Assemble limit to check if over end of flash, in which case something is just wrong, so branch to store and hope for the best
+	ldr r4, =__flash_end // Assemble limit to check if over end of flash, in which case something is just wrong, so branch to store and hope for the best
 	cmp r3, r4 // Compare address from got and end of flash
 	bhs GotStoreTableAddressToRam // If address address higher or same (hs) than end of flash, branch to store got table address data and hope for the best
-	ldr r4, =_flash_start // Assemble limit to check if under start of flash, in which case something is just wrong, so branch to store and hope for the best
+	ldr r4, =__flash_begin // Assemble limit to check if under start of flash, in which case something is just wrong, so branch to store and hope for the best
 	cmp r3, r4 // Compare address from got and start of flash
 	blo GotStoreTableAddressToRam // If address address lower (lo) than start of flash, branch to store got table address data and hope for the best
 	adds r3, r3, r6 // Finally a position in flash. Add the offset.
 GotStoreTableAddressToRam:
-	ldr r4, =_ram_start// Start getting address in ram where to put the table address value
+	ldr r4, =__ram_begin// Start getting address in ram where to put the table address value
 	adds r4, r4, r2 // Add plain offset of got
 	adds r4, r4, r1 // Add the original loop counter (is: 0, 4, 8, 12, ...)
 	str r3, [r4] // Add the table address to ram
 	b GotPatchLoopCond // And go to check the loop
 GotPatchEnd:
-	ldr r0, =_got_start_ram
+	ldr r0, =__ram_got_begin
 	mov r9, r0 // Stupid trick to put global offset table location to r9
 	movs r0, 0 // Cleaning up the rest, just in case
 	movs r1, 0
@@ -164,6 +168,9 @@ LoopCopyDataInit:
 FillZerobss:
 	movs	r3, #0
 	adds r2, r2, #4 // Increment the loop counter already so ww avoid non-ending loops
+	ldr r4, =gu32FlashBegin // Get flash being variable address
+	cmp r2, r4 // Compare address to the address we are going to zero
+	beq LoopFillZerobss // Jump away if would otherwise zero it
 	ldr r4, =gu32FirmwareOffset // Get firmware offset variable address
 	cmp r2, r4 // Compare address to the address we are going to zero
 	beq LoopFillZerobss // Jump away if would otherwise zero it

@@ -26,77 +26,24 @@ static void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void vF070rb_DeInitAndJump(uint32_t u32JumpAddress);
 
-// From https://github.com/viktorvano/STM32-Bootloader/blob/master/STM32F103C8T6_Bootloader/Core/Inc/bootloader.h
-typedef void (application_t)(void);
-
-// From https://github.com/viktorvano/STM32-Bootloader/blob/master/STM32F103C8T6_Bootloader/Core/Inc/bootloader.h
-typedef struct
-{
-    uint32_t    stack_addr;     // Stack Pointer
-    application_t*  func_p;        // Program Counter
-} JumpStruct;
 
 static void vF070rb_DeInitAndJump(uint32_t u32FwAddress)
 {
-  uint32_t u32VectorAddress = 0;
-
-  uint32_t* pu32FwFlashPointer = (uint32_t*)u32FwAddress;
-  uint32_t* pu32FwRamPointer = (uint32_t*)RAM_VECTOR_TABLE_BEGIN;
+  uint32_t u32FirmwareStackPointerAddress = 0;
+  uint32_t u32FirmwareResetHandlerAddress = 0;
   uint32_t u32FirmwareOffset = u32FwAddress - FLASH_BOOTLOADER_BEGIN;
-  uint32_t u32UnpatchedValue = 0;
-  uint32_t u32PatchedValue = 0;
+  uint32_t* pu32FwFlashPointer = (uint32_t*)u32FwAddress;
 
-  // Stop compile nags:
-  u32UnpatchedValue = u32UnpatchedValue;
-  u32PatchedValue = u32PatchedValue;
+  // Read 4 first bytes from FW, the stack pointer
+  u32FirmwareStackPointerAddress = *pu32FwFlashPointer;
+  // Read 4 next bytes from FW, reset handler address
+  pu32FwFlashPointer++;
+  u32FirmwareResetHandlerAddress = *pu32FwFlashPointer;
+  // Patch it with offset
+  u32FirmwareResetHandlerAddress += u32FirmwareOffset;
 
-  // Check if we need to do reset handler relocation. Not 100% accurate because
-  // if original binary reset handler gets pushed back beyond "natural" 0x5000 border, this fails
-  uint32_t u32UnalteredResetAddress = *(pu32FwFlashPointer + 1);
-
-  // Cannot figure out right now what corner case could be
-  if (u32UnalteredResetAddress < FLASH_FIRMWARES_EARLIEST_BEGIN)
-  {
-    // Detected actual firmware, so copy and patch it.
-
-    // Copy vector table first
-    while (pu32FwRamPointer < (uint32_t*)RAM_VECTOR_TABLE_END)
-    {
-      *(pu32FwRamPointer++) = *(pu32FwFlashPointer++);
-    }
-    // Reset is in offset 1
-    // Example
-    // We are given  u32FwAddress = 0x8005000;
-    // Firmware binary thinks it is in 0x8000000 (which is actually bootloader start address)
-    // Offset is 0x8005000 - 0x8000000 eq u32FwAddress - FLASH_BOOTLOADER_BEGIN
-
-    // Patch vector table...
-    pu32FwRamPointer = (uint32_t*)RAM_VECTOR_TABLE_BEGIN;
-    pu32FwRamPointer++; // .. but omit first address, it points to ram
-
-    // Actual patching loop
-    while (pu32FwRamPointer < (uint32_t*)RAM_VECTOR_TABLE_END)
-    {
-      if (*pu32FwRamPointer != 0)
-      {
-        u32UnpatchedValue = *pu32FwRamPointer;
-        *pu32FwRamPointer += u32FirmwareOffset;
-        u32PatchedValue = *pu32FwRamPointer;
-      }
-      pu32FwRamPointer++;
-    }
-    // Firmware patches its own got in assembly upon startup
-
-    // And lets hope for the best
-    u32VectorAddress = RAM_VECTOR_TABLE_BEGIN;
-  }
-  else
-  {
-    u32VectorAddress = u32FwAddress;
-  }
   // Deinitialization and jump parts from
   // https://github.com/viktorvano/STM32-Bootloader/blob/master/STM32F103C8T6_Bootloader/Core/Inc/bootloader.h
-  const JumpStruct* pxJumpVector = ((JumpStruct*)(u32VectorAddress));
 
   __disable_irq();
 
@@ -111,12 +58,7 @@ static void vF070rb_DeInitAndJump(uint32_t u32FwAddress)
   SysTick->LOAD = 0;
   SysTick->VAL = 0;
 
-  // Cortex-M0 has no vector table.
-  // SCB->VTOR = u32VectorAddress;
-  // But we can remap memory
-  // Lets put it to firmware side
-  //__HAL_SYSCFG_REMAPMEMORY_SRAM();
-  //__DMB();
+  // Firmware does all the rest needed, system memory remapping, vector table and got operations, etc.
 
   // Store firmware offset to r6 (was: r12 but there was some kind of stupid low register requirement)
   asm ("ldr r6, %0;"
@@ -131,7 +73,7 @@ static void vF070rb_DeInitAndJump(uint32_t u32FwAddress)
       :);
 
   // Actual jump
-  asm("mov sp, %0; bx %1;" : : "r"(pxJumpVector->stack_addr), "r"(pxJumpVector->func_p));
+  asm("mov sp, %0; bx %1;" : : "r"(u32FirmwareStackPointerAddress), "r"(u32FirmwareResetHandlerAddress));
 
 }
 

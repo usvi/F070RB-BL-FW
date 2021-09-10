@@ -56,8 +56,6 @@ MEMORY
 }
 
 
-__flash_firmwares_earliest_begin = ORIGIN(FLASH_FIRMWARES) ;
-
 
 /* Sections */
 SECTIONS
@@ -65,16 +63,11 @@ SECTIONS
   /* The startup code into "FLASH" Rom type memory */
   .isr_vector :
   {
-    . = ALIGN(4);
-	__ram_vector_table_begin = . - FLASH_FULL_START + RAM_FULL_START ;
+    . = ALIGN(256);
 	__flash_bootloader_begin = . ;
     KEEP(*(.isr_vector)) /* Startup code */
-	__ram_vector_table_end = . - FLASH_FULL_START + RAM_FULL_START ;
     . = ALIGN(4);
   } >FLASH_BOOTLOADER
-
-  /* ALready aligned. */
-  __ram_got_plt_begin = . - FLASH_FULL_START + RAM_FULL_START ;
 
 
   /* The program code and other data into "FLASH" Rom type memory */
