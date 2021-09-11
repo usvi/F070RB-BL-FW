@@ -223,7 +223,10 @@ VectorTableCopyPatchInit:
 VectorTableCopyPatchLoopCond:
   ldr r2, =__flash_vector_table_begin // Need vector table beginning for pointer
   ldr r3, =__flash_vector_table_end // And need end for checking loop
-  adds r1, r0, r2 // Updating the pointer with begin value and loop variable
+  adds r1, r0, r2 // Poiter value is offset plus vector table flash start address
+  ldr r2, =gu32FirmwareOffset // Need also data offset variable address
+  ldr r2, [r2] // And then the actual data
+  adds r1, r1, r2 // Updating the pointer with firmware offset
   cmp r1, r3 // Compare pointer against flash end
   bhs VectorTableCopyPatchEnd // If getting past limits, go to end
 
