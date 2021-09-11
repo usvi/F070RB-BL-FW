@@ -114,7 +114,7 @@ GotPatchLoopCond:
 	ldr r2, = __ram_got_end
 	subs r2, r2, r1 // How many bytes is the lenght
 	cmp r0, r2 // Check if loop is at end
-	beq GotPatchEnd // Jump to end if compare equal
+	bhs GotPatchEnd // Jump to end if compare equal or past end
 
 GotPatchLoopBody:
 	movs r1, r0 // Copy original loop counter value to r1
@@ -212,6 +212,84 @@ FillZerobssSkip:
 LoopFillZerobss:
   cmp r2, r4
   bcc FillZerobss
+
+
+
+  // Need to copy and patch vector table in assembly so nobody comes to mess around
+VectorTableCopyPatchInit:
+  movs r0, #0 // Loop variable
+  movs r1, #0 // Pointer (just introduction)
+
+VectorTableCopyPatchLoopCond:
+  ldr r2, =__flash_vector_table_begin // Need vector table beginning for pointer
+  ldr r3, =__flash_vector_table_end // And need end for checking loop
+  adds r1, r0, r2 // Updating the pointer with begin value and loop variable
+  cmp r1, r3 // Compare pointer against flash end
+  bhs VectorTableCopyPatchEnd // If getting past limits, go to end
+
+VectorTableCopyPatchLoopBody:
+  ldr r2, [r1] // Load the actual data via pointer
+  ldr r3, =__flash_begin // Need flash begin boundary for checking
+  ldr r4, =__flash_end // Need also flash end boundary for checking
+  cmp r2, r3 // Comparing loaded data to flash begin
+  blo VectorTableStoreData // If less than flash begin, jump to store
+  cmp r2, r4 // Comparing loaded data to flash end
+  bhs VectorTableStoreData // If more than or equal to end, jump to store
+
+VectorTablePatchData:
+  ldr r3, =gu32FirmwareOffset // Need data offset variable address
+  ldr r3, [r3] // And then the actual data
+  adds r2, r2, r3 // Patch the data
+
+VectorTableStoreData:
+  ldr r3, =__ram_vector_table_begin // Get vector table begin in ram for ram data pointer
+  adds r3, r3, r0 // Add loop variable
+  str r2, [r3] // Store the data
+
+VectorTableLoopIncrements:
+  adds r0, r0, #4 // Increment loop
+  b VectorTableCopyPatchLoopCond // Jump to loop condition checking
+
+VectorTableCopyPatchEnd:
+
+
+
+
+
+  /*
+  ldr r1, =__flash_vector_table_begin // Begin flash boundary
+  ldr r2, =__flash_vector_table_end // Boundary to check if we are done
+  ldr r3, =__ram_vector_table_begin // Where in ram to put next
+  ldr r4, =__flash_begin // Where does flash begin so we can check if values is to be patched
+  ldr r5, =__flash_end // Where does flash end? Only patch values if between.
+  ldr r6, =gu32FirmwareOffset // Load firmware offset variable address
+  ldr r6, [r5] // Load actual firmware offset value
+  movs r7, #0 // Pointer (just introduction here)
+  */
+/*
+VectorTableCopyPatchLoopCond:
+
+  adds r7, r0, r1 // Update
+  cmp r7, r2 // Compare pointer to end of vector table to see if we are done
+  bhs VectorTableCopyPatchEnd // Jump away if past or at end (well, basically past end)
+
+VectorTableCopyPatchLoopBody:
+  ldr r6, [r0] // Load the actual vector table data via pointer
+  cmp r6, r3 // Compare if value less than flash begin
+  blo VectorTableStore // Skip to copy without patching
+  cmp r6, r4 // Compare if value higher than flash end
+  bhs VectorTableStore // Skip to copy without patching
+
+VectorTablePatch:
+  ldr r7, =__flash_vector_table_begin // Start assembling difference from beginning
+
+  adds r6, r6, r5 // Add the increment to flash value
+
+VectorTableStore:
+  str r6, []
+
+VectorTableLoopCondIncrements:
+*/
 
 
 
