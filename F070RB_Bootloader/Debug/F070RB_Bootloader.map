@@ -2254,10 +2254,10 @@ LOAD c:/st/stm32cubeide_1.6.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.exte
                 0x0000000020004000                _estack = (ORIGIN (RAM) + LENGTH (RAM))
                 0x0000000000000200                _Min_Heap_Size = 0x200
                 0x0000000000000400                _Min_Stack_Size = 0x400
+                0x0000000008000000                __flash_begin = ORIGIN (FLASH)
 
 .isr_vector     0x0000000008000000       0xc0
                 0x0000000008000000                . = ALIGN (0x100)
-                0x0000000008000000                __flash_bootloader_begin = .
  *(.isr_vector)
  .isr_vector    0x0000000008000000       0xc0 Core/Startup/startup_stm32f070rbtx.o
                 0x0000000008000000                g_pfnVectors
@@ -2685,24 +2685,24 @@ LOAD c:/st/stm32cubeide_1.6.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.exte
  .debug_line    0x0000000000002f1e      0xa80 Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_gpio.o
  .debug_line    0x000000000000399e      0xcea Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rcc.o
 
-.debug_str      0x0000000000000000    0x57c8f
- .debug_str     0x0000000000000000    0x570cc Core/Src/main.o
-                                      0x5734e (size before relaxing)
- .debug_str     0x00000000000570cc       0x2c Core/Src/stm32f0xx_hal_msp.o
+.debug_str      0x0000000000000000    0x57c79
+ .debug_str     0x0000000000000000    0x570b6 Core/Src/main.o
+                                      0x57338 (size before relaxing)
+ .debug_str     0x00000000000570b6       0x2c Core/Src/stm32f0xx_hal_msp.o
                                       0x57040 (size before relaxing)
- .debug_str     0x00000000000570f8       0x76 Core/Src/stm32f0xx_it.o
+ .debug_str     0x00000000000570e2       0x76 Core/Src/stm32f0xx_it.o
                                       0x57030 (size before relaxing)
- .debug_str     0x000000000005716e       0x5f Core/Src/system_stm32f0xx.o
+ .debug_str     0x0000000000057158       0x5f Core/Src/system_stm32f0xx.o
                                       0x56ee3 (size before relaxing)
- .debug_str     0x00000000000571cd       0x36 Core/Startup/startup_stm32f070rbtx.o
+ .debug_str     0x00000000000571b7       0x36 Core/Startup/startup_stm32f070rbtx.o
                                          0x64 (size before relaxing)
- .debug_str     0x0000000000057203      0x435 Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal.o
+ .debug_str     0x00000000000571ed      0x435 Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal.o
                                       0x5740c (size before relaxing)
- .debug_str     0x0000000000057638      0x204 Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_cortex.o
+ .debug_str     0x0000000000057622      0x204 Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_cortex.o
                                       0x572c4 (size before relaxing)
- .debug_str     0x000000000005783c      0x213 Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_gpio.o
+ .debug_str     0x0000000000057826      0x213 Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_gpio.o
                                       0x5717f (size before relaxing)
- .debug_str     0x0000000000057a4f      0x240 Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rcc.o
+ .debug_str     0x0000000000057a39      0x240 Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rcc.o
                                       0x572ed (size before relaxing)
 
 .comment        0x0000000000000000       0x53

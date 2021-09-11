@@ -40,6 +40,7 @@ MEMORY
   FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 128K
 }
 
+__flash_begin = ORIGIN(FLASH) ;
 
 /* Sections */
 SECTIONS
@@ -48,7 +49,6 @@ SECTIONS
   .isr_vector :
   {
     . = ALIGN(256);
-	__flash_bootloader_begin = . ;
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
   } >FLASH

@@ -21,9 +21,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-extern uint32_t __flash_bootloader_begin;
+extern uint32_t __flash_begin;
 
-#define FLASH_BOOTLOADER_BEGIN ((uint32_t)(&__flash_bootloader_begin)) /* Basically 0x8000000 */
+#define FLASH_BOOTLOADER_BEGIN ((uint32_t)(&__flash_begin)) /* Basically 0x8000000 */
 
 
 static void SystemClock_Config(void);
