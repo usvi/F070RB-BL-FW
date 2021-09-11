@@ -21,6 +21,10 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
+extern uint32_t __flash_bootloader_begin;
+
+#define FLASH_BOOTLOADER_BEGIN ((uint32_t)(&__flash_bootloader_begin)) /* Basically 0x8000000 */
+
 
 static void SystemClock_Config(void);
 static void MX_GPIO_Init(void);

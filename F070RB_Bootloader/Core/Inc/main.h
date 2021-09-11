@@ -30,8 +30,6 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f0xx_hal.h"
 
-extern uint32_t __flash_bootloader_begin;
-
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
@@ -56,8 +54,6 @@ void Error_Handler(void);
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14
 #define TCK_GPIO_Port GPIOA
-
-#define FLASH_BOOTLOADER_BEGIN ((uint32_t)(&__flash_bootloader_begin)) /* Basically 0x8000000 */
 
 
 #ifdef __cplusplus
