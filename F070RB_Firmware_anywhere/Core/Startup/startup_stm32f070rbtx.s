@@ -57,13 +57,15 @@ Reset_Handler:
   ldr r1, =__flash_begin
   str r1, [r2]
 
-  // Store r5 passed by bootloader as gu32FirmwareAbsPosition (earlier r11)
+  // Store r11 passed by bootloader as gu32FirmwareAbsPosition, need to use hoop Cortex-M0
+  mov r7, r11
   ldr r2, =gu32FirmwareAbsPosition
-  str r5, [r2]
+  str r7, [r2]
 
-  // Store r6 passed by bootloader as gu32FirmwareOffset (earlier: r12)
+  // Store r12 passed by bootloader as gu32FirmwareOffset, need to use hoop for Cortex-M0
+  mov r7, r12
   ldr r2, =gu32FirmwareOffset
-  str r6, [r2]
+  str r7, [r2]
 
   // Force ram vector table begin address to global variable
   ldr r2, =gu32RamVectorTableBegin;

@@ -60,15 +60,17 @@ static void vF070rb_DeInitAndJump(uint32_t u32FwAddress)
 
   // Firmware does all the rest needed, system memory remapping, vector table and got operations, etc.
 
-  // Store firmware offset to r6 (was: r12 but there was some kind of stupid low register requirement)
-  asm ("ldr r6, %0;"
-      :"=m"(u32FirmwareOffset)
+  // Store firmware absolute address to r11 via hoop
+  // NOTE: INSPECT WITH INSTRUCTION STEPPING MODE THAT r6 IS FREE!
+  asm ("ldr r6, %0; mov r11, r6"
+      :"=m"(u32FwAddress)
       :
       :);
 
-  // Store firmware actual address to r5 (was: r11 but there was some kind of stupid low register requirement)
-  asm ("ldr r5, %0;"
-      :"=m"(u32FwAddress)
+  // Store firmware offset to r12 via hoop
+  // NOTE: INSPECT WITH INSTRUCTION STEPPING MODE THAT r6 IS FREE!
+  asm ("ldr r6, %0; mov r12, r6;"
+      :"=m"(u32FirmwareOffset)
       :
       :);
 
