@@ -45,6 +45,12 @@ defined in linker script */
 /* end address for the .bss section. defined in linker script */
 .word _ebss
 
+
+.word __flash_begin
+.word __ram_vector_table_begin
+.word __ram_vector_table_end
+
+
   .section .text.Reset_Handler
   .weak Reset_Handler
   .type Reset_Handler, %function
@@ -52,8 +58,7 @@ Reset_Handler:
   ldr   r0, =_estack
   mov   sp, r0          /* set stack pointer */
 
-  // STORE THE SYMBOLS EXPLICITLY TO AVOID PROBLEMS DURING SELF-BOOTSTRAPPING
-  // (Funny thing, M0 register reset values seem to be 0xffffffff
+
 
   // Store r10 passed by bootloader as gu32FirmwareAbsPosition, need to use hoop if Cortex-M0
   mov r7, r10
@@ -70,23 +75,12 @@ Reset_Handler:
   ldr r2, =gu32FirmwareAbsOffsetChecksum
   str r7, [r2]
 
-  // Force flash begin address to global variable
-  ldr r2, =gu32FlashBegin;
-  ldr r1, =__flash_begin
-  str r1, [r2]
 
-  // Force ram vector table begin address to global variable
-  ldr r2, =gu32RamVectorTableBegin;
-  ldr r1, =__ram_vector_table_begin
-  str r1, [r2]
-
-  // Force ram vector table end address to global variable
-  ldr r2, =gu32RamVectorTableEnd;
-  ldr r1, =__ram_vector_table_end
-  str r1, [r2]
 
   // Firmware may be booting as standalone. In that case inspect the checksum
   // and if it does not match, we are most likely running from standalone.
+  // Funny thing, Cortex-M0 reset values seem to be like 0xffffffff? Well,
+  // checksum in anycase takes care of that correct values are loaded.
   ldr r2, =gu32FirmwareAbsPosition // Load variable address
   ldr r2, [r2] // Load variable data
   ldr r3, =gu32FirmwareOffset // Load variable address
@@ -96,35 +90,19 @@ Reset_Handler:
   movs r1, r2// Calculating the checksum into r1
   eors r1, r1, r3 // r2/gu32FirmwareAbsPosition already there, need only r3/gu32FirmwareOffset
   cmp r1, r4 // Actual compare
-  beq StandaloneBootEnd // If match, just do nothing
+  beq StandaloneBootContinue // If match, just do nothing
   // Did not match, so we need to store correct values of gu32FirmwareAbsPosition and gu32FirmwareOffset
-  ldr r1, =gu32FlashBegin; // Load variable address
-  ldr r1, [r1] // Load variable data, this goes to gu32FirmwareAbsPosition
+  ldr r1, =__flash_begin; // Load variable address
   ldr r2, =gu32FirmwareAbsPosition // Load variable address
   str r1, [r2] // Finally store the new value to ram
   movs r1, #0 // Put zero offset
-  ldr r2, =gu32FirmwareOffset // Load variable address
+  ldr r2, =gu32FirmwareOffset // Load firmware offset variable address
   str r1, [r2] // Store zero offset
   // Leave the checksum in memory as it was, even if it was wrong
 
-StandaloneBootEnd:
+StandaloneBootContinue:
 
-/*
-  // If gu32FirmwareAbsPosition is zero, make it flash
-  ldr r2, =gu32FirmwareAbsPosition // Load variable address
-  ldr r2, [r2] // Load variable data
-  cmp r2, #0 // Compare if data (which is in this case also an address, heh) is zero
-  beq FixZeroAbsDo // If gu32FirmwareAbsPosition != zero, jump to end
-  movs r3, #0
 
-  cmp r2, #0 // Stupidly compare also to 0xffffffff
-  beq FixZeroAbsDo // If gu32FirmwareAbsPosition != zero, jump to end
-FixZeroAbsDo:
-  ldr r3, =gu32FlashBegin; // gu32FirmwareAbsPosition was zero, fix it. Get address of flash begin.
-  ldr r3, [r3] // Load the actual flash begin data (address)
-  ldr r2, =gu32FirmwareAbsPosition // Reload variable address
-  str r3, [r2] // Finally store the data in r3 to address in r2
-*/
 
 GotPatchLoopInit:
 	ldr r6, =gu32FirmwareOffset // Get firmware offset variable address
@@ -173,15 +151,6 @@ GotPatchEnd:
 
 
 
-
-
-
-
-
-
-
-
-
 /* Copy the data segment initializers from flash to SRAM */
   ldr r0, =_sdata
   ldr r1, =_edata
@@ -209,31 +178,31 @@ LoopCopyDataInit:
   b LoopFillZerobss
 
 FillZerobss:
-  // Here we need to check that we are not zeroing out addresses we just set up
+  // Here we need to check that we are not zeroing out addresses or needed symbols
 
-  ldr r6, =gu32FirmwareAbsPosition
-  cmp r2, r6
-  beq FillZerobssSkip
+  ldr r6, =gu32FirmwareAbsPosition // Load address of absolute firmware position variable
+  cmp r2, r6 // Compare with what we are going to zero
+  beq FillZerobssSkip // If we should skip zeroing, jump away
 
-  ldr r6, =gu32FirmwareOffset
-  cmp r2, r6
-  beq FillZerobssSkip
+  ldr r6, =gu32FirmwareOffset // Load address of firmware offset variable
+  cmp r2, r6 // Compare with what we are going to zero
+  beq FillZerobssSkip // If we should skip zeroing, jump away
 
-  ldr r6, =gu32FirmwareAbsOffsetChecksum
-  cmp r2, r6
-  beq FillZerobssSkip
+  ldr r6, =gu32FirmwareAbsOffsetChecksum // Load address of firmware position and offset checksum
+  cmp r2, r6 // Compare with what we are going to zero
+  beq FillZerobssSkip // If we should skip zeroing, jump away
 
-  ldr r6, =gu32FlashBegin
-  cmp r2, r6
-  beq FillZerobssSkip
+  ldr r6, =__flash_begin // Load address of flash begin symbol
+  cmp r2, r6 // Compare with what we are going to zero
+  beq FillZerobssSkip // If we should skip zeroing, jump away
 
-  ldr r6, =gu32RamVectorTableBegin
-  cmp r2, r6
-  beq FillZerobssSkip
+  ldr r6, =__ram_vector_table_begin // Load address of ram vector table begin symbo
+  cmp r2, r6 // Compare with what we are going to zero
+  beq FillZerobssSkip // If we should skip zeroing, jump away
 
-  ldr r6, =gu32RamVectorTableEnd
-  cmp r2, r6
-  beq FillZerobssSkip
+  ldr r6, =__ram_vector_table_end // Load address of ram vector table end symbol
+  cmp r2, r6 // Compare with what we are going to zero
+  beq FillZerobssSkip // If we should skip zeroing, jump away
 
   str  r3, [r2] // If not escaped yet, make the store
 

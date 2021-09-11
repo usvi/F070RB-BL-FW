@@ -9,8 +9,5 @@
 extern uint32_t gu32FirmwareAbsPosition;
 extern uint32_t gu32FirmwareOffset;
 extern uint32_t gu32FirmwareAbsOffsetChecksum;
-extern uint32_t gu32FlashBegin;
-extern uint32_t gu32RamVectorTableBegin;
-extern uint32_t gu32RamVectorTableEnd;
 
 #endif // #define _IMAGE_INFO_H_

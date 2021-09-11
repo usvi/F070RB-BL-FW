@@ -6,6 +6,3 @@
 uint32_t gu32FirmwareAbsPosition;
 uint32_t gu32FirmwareOffset;
 uint32_t gu32FirmwareAbsOffsetChecksum;
-uint32_t gu32FlashBegin;
-uint32_t gu32RamVectorTableBegin;
-uint32_t gu32RamVectorTableEnd;
