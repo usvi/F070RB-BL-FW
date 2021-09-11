@@ -70,7 +70,6 @@ Reset_Handler:
   ldr r2, =gu32FirmwareAbsOffsetChecksum
   str r7, [r2]
 
-
   // Force flash begin address to global variable
   ldr r2, =gu32FlashBegin;
   ldr r1, =__flash_begin
@@ -86,9 +85,30 @@ Reset_Handler:
   ldr r1, =__ram_vector_table_end
   str r1, [r2]
 
+  // Firmware may be booting as standalone. In that case inspect the checksum
+  // and if it does not match, we are most likely running from standalone.
+  ldr r2, =gu32FirmwareAbsPosition // Load variable address
+  ldr r2, [r2] // Load variable data
+  ldr r3, =gu32FirmwareOffset // Load variable address
+  ldr r3, [r3] // Load variable data
+  ldr r4, =gu32FirmwareAbsOffsetChecksum // Load variable address
+  ldr r4, [r4] // Load variable data
+  movs r1, r2// Calculating the checksum into r1
+  eors r1, r1, r3 // r2/gu32FirmwareAbsPosition already there, need only r3/gu32FirmwareOffset
+  cmp r1, r4 // Actual compare
+  beq StandaloneBootEnd // If match, just do nothing
+  // Did not match, so we need to store correct values of gu32FirmwareAbsPosition and gu32FirmwareOffset
+  ldr r1, =gu32FlashBegin; // Load variable address
+  ldr r1, [r1] // Load variable data, this goes to gu32FirmwareAbsPosition
+  ldr r2, =gu32FirmwareAbsPosition // Load variable address
+  str r1, [r2] // Finally store the new value to ram
+  movs r1, #0 // Put zero offset
+  ldr r2, =gu32FirmwareOffset // Load variable address
+  str r1, [r2] // Store zero offset
+  // Leave the checksum in memory as it was, even if it was wrong
 
+StandaloneBootEnd:
 
-// If checksum does not match, use defaults
 /*
   // If gu32FirmwareAbsPosition is zero, make it flash
   ldr r2, =gu32FirmwareAbsPosition // Load variable address
@@ -104,7 +124,6 @@ FixZeroAbsDo:
   ldr r3, [r3] // Load the actual flash begin data (address)
   ldr r2, =gu32FirmwareAbsPosition // Reload variable address
   str r3, [r2] // Finally store the data in r3 to address in r2
-FixZeroAbsEnd:
 */
 
 GotPatchLoopInit:
