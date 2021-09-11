@@ -152,6 +152,7 @@ void SystemInit(void)
   __DMB();
   __HAL_SYSCFG_REMAPMEMORY_SRAM();
   __DMB();
+
   /* NOTE :SystemInit(): This function is called at startup just after reset and 
                          before branch to main program. This call is made inside
                          the "startup_stm32f0xx.s" file.

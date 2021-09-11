@@ -173,68 +173,76 @@ GotPatchEnd:
 
 
 
+
+
+
+
+
+
+
+
+
 /* Copy the data segment initializers from flash to SRAM */
-  movs	r1, #0
-  b	LoopCopyDataInit
+  ldr r0, =_sdata
+  ldr r1, =_edata
+  ldr r2, =_sidata
+  ldr r7, =gu32FirmwareOffset // Load firmware offset variable address
+  ldr r7, [r7] // Load the actual firmware offset variable data
+  adds r2, r2, r7 // Patch the sidata location with offset
+  movs r3, #0
+  b LoopCopyDataInit
 
 CopyDataInit:
-	ldr r7, =gu32FirmwareOffset
-	ldr r7, [r7]
-	ldr	r3, =_sidata
-	adds r3, r3, r7
-	ldr	r3, [r3, r1]
-	str	r3, [r0, r1]
-	adds	r1, r1, #4
+  ldr r4, [r2, r3]
+  str r4, [r0, r3]
+  adds r3, r3, #4
 
 LoopCopyDataInit:
-	ldr	r0, =_sdata
-	ldr	r3, =_edata
-	adds	r2, r0, r1
-	cmp	r2, r3
-	bcc	CopyDataInit
-	ldr	r2, =_sbss
-	adds r2, r2, r7
-	b	LoopFillZerobss
+  adds r4, r0, r3
+  cmp r4, r1
+  bcc CopyDataInit
 
 /* Zero fill the bss segment. */
+  ldr r2, =_sbss
+  ldr r4, =_ebss
+  movs r3, #0
+  b LoopFillZerobss
+
 FillZerobss:
-	movs	r3, #0
-	adds r2, r2, #4 // Increment the loop counter already so ww avoid non-ending loops
+  // Here we need to check that we are not zeroing out addresses we just set up
 
-	ldr r4, =gu32FirmwareAbsPosition // Get firmware abs position variable address
-	cmp r2, r4 // Compare address to the address we are going to zero
-	beq LoopFillZerobss // Jump away if would otherwise zero it
+  ldr r6, =gu32FirmwareAbsPosition
+  cmp r2, r6
+  beq FillZerobssSkip
 
-	ldr r4, =gu32FirmwareOffset // Get firmware offset variable address
-	cmp r2, r4 // Compare address to the address we are going to zero
-	beq LoopFillZerobss // Jump away if would otherwise zero it
+  ldr r6, =gu32FirmwareOffset
+  cmp r2, r6
+  beq FillZerobssSkip
 
-  ldr r4, =gu32FirmwareAbsOffsetChecksum // Get firmware abs and offset checksum variable address
-  cmp r2, r4 // Compare address to the address we are going to zero
-  beq LoopFillZerobss // Jump away if would otherwise zero it
+  ldr r6, =gu32FirmwareAbsOffsetChecksum
+  cmp r2, r6
+  beq FillZerobssSkip
 
-  ldr r4, =gu32FlashBegin // Get flash begin variable address
-  cmp r2, r4 // Compare address to the address we are going to zero
-  beq LoopFillZerobss // Jump away if would otherwise zero it
+  ldr r6, =gu32FlashBegin
+  cmp r2, r6
+  beq FillZerobssSkip
 
-	ldr r4, =gu32RamVectorTableBegin // Get vector table begin variable address
-	cmp r2, r4 // Compare address to the address we are going to zero
-	beq LoopFillZerobss // Jump away if would otherwise zero it
+  ldr r6, =gu32RamVectorTableBegin
+  cmp r2, r6
+  beq FillZerobssSkip
 
-	ldr r4, =gu32RamVectorTableEnd // Get vector table end variable address
-	cmp r2, r4 // Compare address to the address we are going to zero
-	beq LoopFillZerobss // Jump away if would otherwise zero it
+  ldr r6, =gu32RamVectorTableEnd
+  cmp r2, r6
+  beq FillZerobssSkip
 
-	subs r2, r2, #4 // Remove our own increment which was needed for special cases
-	str	r3, [r2]
-	adds r2, #4
+  str  r3, [r2] // If not escaped yet, make the store
+
+FillZerobssSkip:
+  adds r2, r2, #4
 
 LoopFillZerobss:
-	ldr r7, =gu32FirmwareOffset
-	ldr r7, [r7]
-	ldr	r3, =_ebss
-	cmp	r2, r3
-	bcc	FillZerobss
+  cmp r2, r4
+  bcc FillZerobss
 
 
 
