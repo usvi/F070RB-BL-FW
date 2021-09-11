@@ -42,6 +42,14 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
+// Direct hovering in debugger yields unpredictible results on
+// relocated firmware. But if properly referenced, the value is got just
+// fine via got table.
+extern uint32_t gu32FlashBegin;
+extern uint32_t gu32FirmwareAbsPosition;
+extern uint32_t gu32FirmwareOffset;
+extern uint32_t gu32RamVectorTableBegin;
+extern uint32_t gu32RamVectorTableEnd;
 
 /* USER CODE END EC */
 

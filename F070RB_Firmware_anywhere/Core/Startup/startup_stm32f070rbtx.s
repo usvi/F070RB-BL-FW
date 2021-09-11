@@ -53,16 +53,26 @@ Reset_Handler:
   msr   msp, r0          /* set stack pointer */
   msr   psp, r0          /* set stack pointer */
 
-	// Store r6 passed by bootloader as gu32FirmwareOffset (earlier: r12)
-	ldr r2, =gu32FirmwareOffset
-	str r6, [r2]
+	// Force flash begin address to global variable
+	ldr r2, =gu32FlashBegin;
+	ldr r1, =__flash_begin
+	str r1, [r2]
 	// Store r5 passed by bootloader as gu32FirmwareAbsPosition (earlier r11)
 	ldr r2, =gu32FirmwareAbsPosition
 	str r5, [r2]
-	// Force flash begin address to global variable
-	ldr r2, =gu32FlashBegin;
-	ldr r5, =__flash_begin
-	str r5, [r2]
+	// Store r6 passed by bootloader as gu32FirmwareOffset (earlier: r12)
+	ldr r2, =gu32FirmwareOffset
+	str r6, [r2]
+	// Force ram vector table begin address to global variable
+	ldr r2, =gu32RamVectorTableBegin;
+	ldr r1, =__ram_vector_table_begin
+	str r1, [r2]
+	// Force ram vector table end address to global variable
+	ldr r2, =gu32RamVectorTableEnd;
+	ldr r1, =__ram_vector_table_end
+	str r1, [r2]
+
+
 	movs r2, #0 // Cleanup
 	movs r5, #0
 	movs r6, #0
@@ -168,15 +178,27 @@ LoopCopyDataInit:
 FillZerobss:
 	movs	r3, #0
 	adds r2, r2, #4 // Increment the loop counter already so ww avoid non-ending loops
-	ldr r4, =gu32FlashBegin // Get flash being variable address
+
+	ldr r4, =gu32FlashBegin // Get flash begin variable address
 	cmp r2, r4 // Compare address to the address we are going to zero
 	beq LoopFillZerobss // Jump away if would otherwise zero it
-	ldr r4, =gu32FirmwareOffset // Get firmware offset variable address
-	cmp r2, r4 // Compare address to the address we are going to zero
-	beq LoopFillZerobss // Jump away if would otherwise zero it
+
 	ldr r4, =gu32FirmwareAbsPosition // Get firmware abs position variable address
 	cmp r2, r4 // Compare address to the address we are going to zero
 	beq LoopFillZerobss // Jump away if would otherwise zero it
+
+	ldr r4, =gu32FirmwareOffset // Get firmware offset variable address
+	cmp r2, r4 // Compare address to the address we are going to zero
+	beq LoopFillZerobss // Jump away if would otherwise zero it
+
+	ldr r4, =gu32RamVectorTableBegin // Get vector table begin variable address
+	cmp r2, r4 // Compare address to the address we are going to zero
+	beq LoopFillZerobss // Jump away if would otherwise zero it
+
+	ldr r4, =gu32RamVectorTableEnd // Get vector table end variable address
+	cmp r2, r4 // Compare address to the address we are going to zero
+	beq LoopFillZerobss // Jump away if would otherwise zero it
+
 	subs r2, r2, #4 // Remove our own increment which was needed for special cases
 	str	r3, [r2]
 	adds r2, #4

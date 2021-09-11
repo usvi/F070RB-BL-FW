@@ -24,8 +24,11 @@
 // relocated firmware. But if properly referenced, the value is got just
 // fine via got table.
 uint32_t gu32FlashBegin;
-uint32_t gu32FirmwareOffset;
 uint32_t gu32FirmwareAbsPosition;
+uint32_t gu32FirmwareOffset;
+uint32_t gu32RamVectorTableBegin;
+uint32_t gu32RamVectorTableEnd;
+
 
 TIM_HandleTypeDef htim16;
 
