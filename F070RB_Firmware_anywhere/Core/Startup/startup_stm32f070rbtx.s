@@ -208,7 +208,9 @@ CallPreinitsLoop:
 	ldr r5, =__init_array_start
 	ldr r4, =__init_array_end // Yes, order is funny to say the least
 	ldr r3, [r0]
+	push {r0, r1, r2, r3, r4, r5, r6, r7} // Save context because calling externals
 	blx r3
+	pop {r0, r1, r2, r3, r4, r5, r6, r7} // Retrieve context
 	adds r0, r0, #4
 	b CallPreinitsLoopCond
 
@@ -219,9 +221,10 @@ CallPreinitsEnd:
 	adds r5, r7
 	ldr r4, =__init_array_end
 	adds r4, r7
-	blx r3
+  push {r0, r1, r2, r3, r4, r5, r6, r7} // Save context because calling externals
+  blx r3
+  pop {r0, r1, r2, r3, r4, r5, r6, r7} // Retrieve context
 
-// r4, r5 untouched or good, hopefully
 CallInitsInit:
 	ldr r7, =gu32FirmwareOffset
 	ldr r7, [r7]
@@ -233,7 +236,9 @@ CallInitsLoopCond:
 CallInitsLoop:
 	ldr r3, [r5]
 	add r3, r3, r7
-	blx r3
+  push {r0, r1, r2, r3, r4, r5, r6, r7} // Save context because calling externals
+  blx r3
+  pop {r0, r1, r2, r3, r4, r5, r6, r7} // Retrieve context
 	adds r5, r5, #4
 	b CallInitsLoopCond
 
