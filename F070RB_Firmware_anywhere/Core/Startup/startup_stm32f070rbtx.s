@@ -52,6 +52,8 @@ Reset_Handler:
   ldr   r0, =_estack
   mov   sp, r0          /* set stack pointer */
 
+  // STORE THE SYMBOLS EXPLICITLY TO AVOID PROBLEMS DURING SELF-BOOTSTRAPPING
+
   // Force flash begin address to global variable
   ldr r2, =gu32FlashBegin;
   ldr r1, =__flash_begin
@@ -77,6 +79,17 @@ Reset_Handler:
   ldr r1, =__ram_vector_table_end
   str r1, [r2]
 
+
+  // If gu32FirmwareAbsPosition is zero, make it flash
+  ldr r2, =gu32FirmwareAbsPosition // Load variable address
+  ldr r2, [r2] // Load variable data
+  cmp r2, #0 // Compare if data (which is in this case also an address, heh) is zero
+  bne FixZeroAbsEnd // If gu32FirmwareAbsPosition != zero, jump to end
+  ldr r3, =gu32FlashBegin; // gu32FirmwareAbsPosition was zero, fix it. Get address of flash begin.
+  ldr r3, [r3] // Load the actual flash begin data (address)
+  ldr r2, =gu32FirmwareAbsPosition // Reload variable address
+  str r3, [r2] // Finally store the data in r3 to address in r2
+FixZeroAbsEnd:
 
 
 GotPatchLoopInit:
