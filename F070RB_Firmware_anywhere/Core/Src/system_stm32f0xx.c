@@ -123,7 +123,6 @@ const uint8_t APBPrescTable[8]  = {0, 0, 0, 0, 1, 2, 3, 4};
   */
 
 
-
 void SystemInit(void)
 {
   uint32_t* pu32FwFlashPointer = (uint32_t*)gu32FirmwareAbsPosition;

@@ -43,7 +43,7 @@ MEMORY
 __ram_begin = ORIGIN(RAM) ;
 __ram_end = ORIGIN(RAM) + LENGTH(RAM) ;
 __flash_begin = ORIGIN(FLASH) ;
-__flash_end = ORIGIN(FLASH) + LENGTH(FLASH);
+__flash_end = ORIGIN(FLASH) + LENGTH(FLASH) ;
 
 /* Sections */
 SECTIONS
@@ -61,7 +61,6 @@ SECTIONS
   __flash_vector_table_begin = LOADADDR(.isr_vector) ;
   __flash_vector_table_end = __flash_vector_table_begin + __ram_vector_table_end - __ram_vector_table_begin ;
   
-	/* GOT sections taken from https://github.com/rgujju/STM32-projects/blob/master/got_plt/stm32_linker.ld */
   .got :
   {
     . = ALIGN(4);
@@ -70,7 +69,7 @@ SECTIONS
     __ram_got_end = . ;
   } >RAM AT> FLASH
   __flash_got_begin = LOADADDR(.got) ;
-  __flash_got_end = __flash_got_begin + __ram_got_end - __ram_got_begin;
+  __flash_got_end = __flash_got_begin + __ram_got_end - __ram_got_begin ;
       
   /* The program code and other data into "FLASH" Rom type memory */
   .text :

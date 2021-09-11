@@ -53,33 +53,28 @@ Reset_Handler:
   msr   msp, r0          /* set stack pointer */
   msr   psp, r0          /* set stack pointer */
 
-	// Force flash begin address to global variable
-	ldr r2, =gu32FlashBegin;
-	ldr r1, =__flash_begin
-	str r1, [r2]
-	// Store r5 passed by bootloader as gu32FirmwareAbsPosition (earlier r11)
-	ldr r2, =gu32FirmwareAbsPosition
-	str r5, [r2]
-	// Store r6 passed by bootloader as gu32FirmwareOffset (earlier: r12)
-	ldr r2, =gu32FirmwareOffset
-	str r6, [r2]
-	// Force ram vector table begin address to global variable
-	ldr r2, =gu32RamVectorTableBegin;
-	ldr r1, =__ram_vector_table_begin
-	str r1, [r2]
-	// Force ram vector table end address to global variable
-	ldr r2, =gu32RamVectorTableEnd;
-	ldr r1, =__ram_vector_table_end
-	str r1, [r2]
+  // Force flash begin address to global variable
+  ldr r2, =gu32FlashBegin;
+  ldr r1, =__flash_begin
+  str r1, [r2]
 
+  // Store r5 passed by bootloader as gu32FirmwareAbsPosition (earlier r11)
+  ldr r2, =gu32FirmwareAbsPosition
+  str r5, [r2]
 
-	movs r2, #0 // Cleanup
-	movs r5, #0
-	movs r6, #0
+  // Store r6 passed by bootloader as gu32FirmwareOffset (earlier: r12)
+  ldr r2, =gu32FirmwareOffset
+  str r6, [r2]
 
+  // Force ram vector table begin address to global variable
+  ldr r2, =gu32RamVectorTableBegin;
+  ldr r1, =__ram_vector_table_begin
+  str r1, [r2]
 
-
-
+  // Force ram vector table end address to global variable
+  ldr r2, =gu32RamVectorTableEnd;
+  ldr r1, =__ram_vector_table_end
+  str r1, [r2]
 
 
 
@@ -87,12 +82,14 @@ GotPatchLoopInit:
 	ldr r6, =gu32FirmwareOffset // Get firmware offset variable address
 	ldr r6, [r6]
 	movs r0, #0 // Loop variable
+
 GotPatchLoopCond:
 	ldr r1, = __ram_got_begin
 	ldr r2, = __ram_got_end
 	subs r2, r2, r1 // How many bytes is the lenght
 	cmp r0, r2 // Check if loop is at end
 	beq GotPatchEnd // Jump to end if compare equal
+
 GotPatchLoopBody:
 	movs r1, r0 // Copy original loop counter value to r1
 	adds r0, r0, #4 // Increase original loop counter r0
@@ -114,41 +111,17 @@ GotPatchLoopBody:
 	cmp r3, r4 // Compare address from got and start of flash
 	blo GotStoreTableAddressToRam // If address address lower (lo) than start of flash, branch to store got table address data and hope for the best
 	adds r3, r3, r6 // Finally a position in flash. Add the offset.
+
 GotStoreTableAddressToRam:
 	ldr r4, =__ram_begin// Start getting address in ram where to put the table address value
 	adds r4, r4, r2 // Add plain offset of got
 	adds r4, r4, r1 // Add the original loop counter (is: 0, 4, 8, 12, ...)
 	str r3, [r4] // Add the table address to ram
 	b GotPatchLoopCond // And go to check the loop
+
 GotPatchEnd:
 	ldr r0, =__ram_got_begin
 	mov r9, r0 // Stupid trick to put global offset table location to r9
-	movs r0, 0 // Cleaning up the rest, just in case
-	movs r1, 0
-	movs r2, 0
-	movs r3, 0
-	movs r4, 0
-	movs r5, 0
-	movs r6, 0
-	movs r7, 0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -174,6 +147,7 @@ LoopCopyDataInit:
 	ldr	r2, =_sbss
 	adds r2, r2, r7
 	b	LoopFillZerobss
+
 /* Zero fill the bss segment. */
 FillZerobss:
 	movs	r3, #0
@@ -212,11 +186,8 @@ LoopFillZerobss:
 
 
 
-
-
 /* Call the clock system intitialization function.*/
   bl  SystemInit
-
 
 
 
@@ -228,9 +199,11 @@ CallPreinitsInit:
 	adds r0, r7
 	ldr r1, =__preinit_array_end
 	adds r1, r7
+
 CallPreinitsLoopCond:
 	cmp r0, r1
 	beq CallPreinitsEnd// If same, it is at end, go away
+
 CallPreinitsLoop:
 	ldr r5, =__init_array_start
 	ldr r4, =__init_array_end // Yes, order is funny to say the least
@@ -238,6 +211,7 @@ CallPreinitsLoop:
 	blx r3
 	adds r0, r0, #4
 	b CallPreinitsLoopCond
+
 CallPreinitsEnd:
 	ldr r3, =_init
 	adds r3, r7
@@ -247,46 +221,33 @@ CallPreinitsEnd:
 	adds r4, r7
 	blx r3
 
-	// r4, r5 untouched or good, hopefully
+// r4, r5 untouched or good, hopefully
 CallInitsInit:
 	ldr r7, =gu32FirmwareOffset
 	ldr r7, [r7]
+
 CallInitsLoopCond:
 	cmp r5, r4
 	beq CallInitsEnd
+
 CallInitsLoop:
 	ldr r3, [r5]
 	add r3, r3, r7
 	blx r3
 	adds r5, r5, #4
 	b CallInitsLoopCond
+
 CallInitsEnd:
-	movs r0, #0
-	movs r1, #0
-	movs r2, #0
-	movs r3, #0
-	movs r4, #0
-	movs r5, #0
-	movs r6, #0
-	movs r7, #0
-
-
-
-
-
-
-
-
-
-
 
 
 
 /* Call the application's entry point.*/
   bl main
 
+
+
 LoopForever:
-    b LoopForever
+  b LoopForever
 
 
 .size Reset_Handler, .-Reset_Handler
