@@ -50,8 +50,7 @@ defined in linker script */
   .type Reset_Handler, %function
 Reset_Handler:
   ldr   r0, =_estack
-  msr   msp, r0          /* set stack pointer */
-  msr   psp, r0          /* set stack pointer */
+  mov   sp, r0          /* set stack pointer */
 
   // Force flash begin address to global variable
   ldr r2, =gu32FlashBegin;
