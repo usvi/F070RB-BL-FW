@@ -37,6 +37,7 @@ static void vF070rb_DeInitAndJump(uint32_t u32FwAddress)
   uint32_t u32FirmwareResetHandlerAddress = 0;
   uint32_t u32FirmwareOffset = u32FwAddress - FLASH_BOOTLOADER_BEGIN;
   uint32_t* pu32FwFlashPointer = (uint32_t*)u32FwAddress;
+  uint32_t u32RegistersChecksum = 0;
 
   // Read 4 first bytes from FW, the stack pointer
   u32FirmwareStackPointerAddress = *pu32FwFlashPointer;
@@ -64,17 +65,27 @@ static void vF070rb_DeInitAndJump(uint32_t u32FwAddress)
 
   // Firmware does all the rest needed, system memory remapping, vector table and got operations, etc.
 
-  // Store firmware absolute address to r11 via hoop
+  // Calculate simple checksum of the registers to be passed
+  u32RegistersChecksum = u32FwAddress ^ u32FirmwareOffset;
+
+  // Store firmware absolute address to r10 via hoop if we had Cortex-M0
   // NOTE: INSPECT WITH INSTRUCTION STEPPING MODE THAT r6 IS FREE!
-  asm ("ldr r6, %0; mov r11, r6"
+  asm ("ldr r6, %0; mov r10, r6"
       :"=m"(u32FwAddress)
       :
       :);
 
-  // Store firmware offset to r12 via hoop
+  // Store firmware offset to r11 via hoop if we had Cortex-M0
+  // NOTE: INSPECT WITH INSTRUCTION STEPPING MODE THAT r6 IS FREE!
+  asm ("ldr r6, %0; mov r11, r6;"
+      :"=m"(u32FirmwareOffset)
+      :
+      :);
+
+  // Store registers checksum to r12 via hoop if we had Cortex-M0
   // NOTE: INSPECT WITH INSTRUCTION STEPPING MODE THAT r6 IS FREE!
   asm ("ldr r6, %0; mov r12, r6;"
-      :"=m"(u32FirmwareOffset)
+      :"=m"(u32RegistersChecksum)
       :
       :);
 
