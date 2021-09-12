@@ -104,6 +104,14 @@ StandaloneBootContinue:
 
 
 
+  // If GOT in RAM (check linker file) this needs to be enabled with all the following
+  // gcc compiler options:
+  //
+  // -fpic
+  // -msingle-pic-base
+  // -mno-pic-data-is-text-relative
+  // -mpic-register=r9
+  //
 GotPatchLoopInit:
 	ldr r6, =gu32FirmwareOffset // Get firmware offset variable address
 	ldr r6, [r6]
@@ -146,8 +154,8 @@ GotStoreTableAddressToRam:
 	b GotPatchLoopCond // And go to check the loop
 
 GotPatchEnd:
-	ldr r0, =__ram_got_begin
-	mov r9, r0 // Stupid trick to put global offset table location to r9
+  ldr r0, =__ram_got_begin
+  mov r9, r0 // Stupid trick to put global offset table location to r9
 
 
 
