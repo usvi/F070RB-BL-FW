@@ -89,7 +89,7 @@ Reset_Handler:
   movs r1, r2// Calculating the checksum into r1
   eors r1, r1, r3 // r2/gu32FirmwareAbsPosition already there, need only r3/gu32FirmwareOffset
   cmp r1, r4 // Actual compare
-  beq StandaloneBootContinue // If match, just do nothing
+  beq BootloadedBootContinue // If match, just do nothing
   // Did not match, so we need to store correct values of gu32FirmwareAbsPosition and gu32FirmwareOffset
   ldr r1, =__flash_begin; // Load variable address
   ldr r2, =gu32FirmwareAbsPosition // Load variable address
@@ -99,56 +99,53 @@ Reset_Handler:
   str r1, [r2] // Store zero offset
   // Leave the checksum in memory as it was, even if it was wrong
 
-StandaloneBootContinue:
+BootloadedBootContinue:
 
 
 
 #ifdef GOT_IN_RAM
 
-GotPatchLoopInit:
-  ldr r6, =gu32FirmwareOffset // Get firmware offset variable address
-  ldr r6, [r6]
+GlobalOffsetTableCopyPatchInit:
   movs r0, #0 // Loop variable
+  movs r1, #0 // Pointer (just introduction)
 
-GotPatchLoopCond:
-  ldr r1, = __ram_got_begin
-  ldr r2, = __ram_got_end
-  subs r2, r2, r1 // How many bytes is the lenght
-  cmp r0, r2 // Check if loop is at end
-  bhs GotPatchEnd // Jump to end if compare equal or past end
+GlobalOffsetTableCopyPatchLoopCond:
+  ldr r2, =__flash_global_offset_table_begin // Need global offset table table beginning for pointer
+  ldr r3, =__flash_global_offset_table_end // And need end for checking loop
+  ldr r4, =gu32FirmwareOffset // Need also data offset variable address
+  ldr r4, [r4] // And the actual offset value
+  adds r2, r2, r4 // Patching flash global offset table begin to honour offset
+  adds r3, r3, r4 // Patching flash global offset table end to honour offset
+  adds r1, r0, r2 // Pointer value is loop variable + offsetted flash global offset table begin
+  cmp r1, r3 // Compare pointer against global offset table flash end
+  bhs GlobalOffsetTableCopyPatchEnd // If getting past limits, go to end
 
-GotPatchLoopBody:
-  movs r1, r0 // Copy original loop counter value to r1
-  adds r0, r0, #4 // Increase original loop counter r0
-  ldr r2, = __ram_got_begin // Load got ram start
-  ldr r3, = __ram_begin // Load actual ram start
-  subs r2, r2, r3 // r2 now has plain got offset from where ever
-  ldr r3, = __flash_begin // Start to assemble flash position
-  adds r3, r3, r6 // Add firmware offset, which is still at r6
-  adds r3, r3, r2 // Add plain offset
-  adds r3, r3, r1 // Add loop offset to reading from flash
-  ldr r3, [r3] // Load actual table data from flash
-  ldr r4, =__ram_begin // Assemble limit to check if over start of ram, in which case don't modify (it is ram or a peripheral)
-  cmp r3, r4 // Compare address from got and start of ram
-  bhs GotStoreTableAddressToRam // If address higher or same (hs) than start of ram, branch to copy got address as is
-  ldr r4, =__flash_end // Assemble limit to check if over end of flash, in which case something is just wrong, so branch to store and hope for the best
-  cmp r3, r4 // Compare address from got and end of flash
-  bhs GotStoreTableAddressToRam // If address address higher or same (hs) than end of flash, branch to store got table address data and hope for the best
-  ldr r4, =__flash_begin // Assemble limit to check if under start of flash, in which case something is just wrong, so branch to store and hope for the best
-  cmp r3, r4 // Compare address from got and start of flash
-  blo GotStoreTableAddressToRam // If address address lower (lo) than start of flash, branch to store got table address data and hope for the best
-  adds r3, r3, r6 // Finally a position in flash. Add the offset.
+GlobalOffsetTableCopyPatchLoopBody:
+  ldr r2, [r1] // Load the actual data via pointer
+  ldr r3, =__flash_begin // Need flash begin boundary for checking
+  ldr r4, =__flash_end // Need also flash end boundary for checking
+  cmp r2, r3 // Comparing loaded data to flash begin
+  blo GlobalOffsetTableStoreData // If less than flash begin, jump to store
+  cmp r2, r4 // Comparing loaded data to flash end
+  bhs GlobalOffsetTableStoreData // If more than or equal to end, jump to store
 
-GotStoreTableAddressToRam:
-  ldr r4, =__ram_begin// Start getting address in ram where to put the table address value
-  adds r4, r4, r2 // Add plain offset of got
-  adds r4, r4, r1 // Add the original loop counter (is: 0, 4, 8, 12, ...)
-  str r3, [r4] // Add the table address to ram
-  b GotPatchLoopCond // And go to check the loop
+GlobalOffsetTablePatchData:
+  ldr r3, =gu32FirmwareOffset // Need data offset variable address
+  ldr r3, [r3] // And then the actual data
+  adds r2, r2, r3 // Patch the data
 
-GotPatchEnd:
-  ldr r0, =__ram_got_begin
-  mov r9, r0 // Stupid trick to put global offset table location to r9
+GlobalOffsetTableStoreData:
+  ldr r3, =__ram_global_offset_table_begin // Get global offset table begin in ram for ram data pointer
+  adds r3, r3, r0 // Add loop variable
+  str r2, [r3] // Store the data
+
+GlobalOffsetTableLoopIncrements:
+  adds r0, r0, #4 // Increment loop
+  b GlobalOffsetTableCopyPatchLoopCond // Jump to loop condition checking
+
+GlobalOffsetTableCopyPatchEnd:
+  ldr r0, =__ram_global_offset_table_begin
+  mov r9, r0 // Stupid trick to put global offset table location to r9, for Cortex-M0
 
 #endif /* #ifdef GOT_IN_RAM */
 
@@ -231,7 +228,7 @@ VectorTableCopyPatchLoopCond:
   adds r2, r2, r4 // Patching flash vector table begin to honour offset
   adds r3, r3, r4 // Patching flash vector table end to honour offset
   adds r1, r0, r2 // Pointer value is loop variable + offsetted flash vector table begin
-  cmp r1, r3 // Compare pointer against flash end
+  cmp r1, r3 // Compare pointer against vector table flash end
   bhs VectorTableCopyPatchEnd // If getting past limits, go to end
 
 VectorTableCopyPatchLoopBody:

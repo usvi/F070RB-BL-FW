@@ -61,25 +61,35 @@ SECTIONS
   __flash_vector_table_begin = LOADADDR(.isr_vector) ;
   __flash_vector_table_end = __flash_vector_table_begin + __ram_vector_table_end - __ram_vector_table_begin ;
   
-  /* GOT variant where it is run from flash */
+
+  /*
+   * Global Offset Table, aka. GOT, can run from flash or RAM. Running
+   * from RAM requires additional setup which is described in Inc/pic_conf.h
+   */
+
+  
+  /* Global Offset Table variant where it is run from flash */
+  /*
   .got :
   {
     . = ALIGN(4);
     *(.got)
   } >FLASH
+  /**/
 
-  /* GOT variant where it is relocated to RAM */
-  /*
+
+  /* Global Offset Table variant where it is relocated to RAM */
   .got :
   {
     . = ALIGN(4);
-    __ram_got_begin = . ;
+    __ram_global_offset_table_begin = . ;
     *(.got)
-    __ram_got_end = . ;
+    __ram_global_offset_table_end = . ;
   } >RAM AT> FLASH
-  __flash_got_begin = LOADADDR(.got) ;
-  __flash_got_end = __flash_got_begin + __ram_got_end - __ram_got_begin ;
-  */
+  __flash_global_offset_table_begin = LOADADDR(.got) ;
+  __flash_global_offset_table_end = __flash_global_offset_table_begin + __ram_global_offset_table_end - __ram_global_offset_table_begin ;
+  /**/
+
       
   /* The program code and other data into "FLASH" Rom type memory */
   .text :

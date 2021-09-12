@@ -6,12 +6,12 @@
  * 2. Uncomment the define GOT_IN_RAM
  * 3. Use following gcc options:
  *
- * -fpic
+ * -fPIC
  * -msingle-pic-base
  * -mno-pic-data-is-text-relative
  * -mpic-register=r9
  */
 
-// #define GOT_IN_RAM
+#define GOT_IN_RAM
 
 #endif /* #define _PIC_CONF_H_ */
