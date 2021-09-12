@@ -48,7 +48,7 @@ __flash_end = ORIGIN(FLASH) + LENGTH(FLASH) ;
 /* Sections */
 SECTIONS
 {
-  /* Vector table and GOT at RAM, must be loaded by ourselves from flash. */
+  /* Interrupt vector table is at RAM, must be loaded by ourselves from flash. */
   .isr_vector :
   {
     . = ALIGN(256);
@@ -66,10 +66,8 @@ SECTIONS
    * Global Offset Table, aka. GOT, can run from flash or RAM. Running
    * from RAM requires additional setup which is described in Inc/pic_conf.h
    */
-
   
   /* Global Offset Table variant where it is run from flash */
-  /*
   .got :
   {
     . = ALIGN(4);
@@ -79,6 +77,7 @@ SECTIONS
 
 
   /* Global Offset Table variant where it is relocated to RAM */
+  /*
   .got :
   {
     . = ALIGN(4);
