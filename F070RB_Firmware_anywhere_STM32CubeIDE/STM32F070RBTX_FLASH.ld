@@ -68,6 +68,7 @@ SECTIONS
    */
   
   /* Global Offset Table variant where it is run from flash */
+  /**/
   .got :
   {
     . = ALIGN(4);
