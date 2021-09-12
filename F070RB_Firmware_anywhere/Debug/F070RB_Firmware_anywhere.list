@@ -39,15 +39,15 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  17 .debug_macro  0000f6b6  00000000  00000000  00029c00  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_line   00009bb4  00000000  00000000  000392b6  2**0
+ 18 .debug_line   00009bb0  00000000  00000000  000392b6  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .debug_str    0006023c  00000000  00000000  00042e6a  2**0
+ 19 .debug_str    0006023c  00000000  00000000  00042e66  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 20 .comment      00000053  00000000  00000000  000a30a6  2**0
+ 20 .comment      00000053  00000000  00000000  000a30a2  2**0
                   CONTENTS, READONLY
- 21 .debug_ranges 00000808  00000000  00000000  000a3100  2**3
+ 21 .debug_ranges 00000808  00000000  00000000  000a30f8  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 22 .debug_frame  00001ed0  00000000  00000000  000a3908  2**2
+ 22 .debug_frame  00001ed0  00000000  00000000  000a3900  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -987,7 +987,7 @@ __STATIC_FORCEINLINE void __DMB(void)
   .type Reset_Handler, %function
 Reset_Handler:
   ldr   r0, =_estack
- 80005d0:	4854      	ldr	r0, [pc, #336]	; (8000724 <LoopForever+0x2>)
+ 80005d0:	4854      	ldr	r0, [pc, #336]	; (8000724 <LoopForever+0x4>)
   mov   sp, r0          /* set stack pointer */
  80005d2:	4685      	mov	sp, r0
 
@@ -997,7 +997,7 @@ Reset_Handler:
   mov r7, r10
  80005d4:	4657      	mov	r7, sl
   ldr r2, =gu32FirmwareAbsPosition
- 80005d6:	4a54      	ldr	r2, [pc, #336]	; (8000728 <LoopForever+0x6>)
+ 80005d6:	4a54      	ldr	r2, [pc, #336]	; (8000728 <LoopForever+0x8>)
   str r7, [r2]
  80005d8:	6017      	str	r7, [r2, #0]
 
@@ -1005,7 +1005,7 @@ Reset_Handler:
   mov r7, r11
  80005da:	465f      	mov	r7, fp
   ldr r2, =gu32FirmwareOffset
- 80005dc:	4a53      	ldr	r2, [pc, #332]	; (800072c <LoopForever+0xa>)
+ 80005dc:	4a53      	ldr	r2, [pc, #332]	; (800072c <LoopForever+0xc>)
   str r7, [r2]
  80005de:	6017      	str	r7, [r2, #0]
 
@@ -1013,7 +1013,7 @@ Reset_Handler:
   mov r7, r12
  80005e0:	4667      	mov	r7, ip
   ldr r2, =gu32FirmwareAbsOffsetChecksum
- 80005e2:	4a53      	ldr	r2, [pc, #332]	; (8000730 <LoopForever+0xe>)
+ 80005e2:	4a53      	ldr	r2, [pc, #332]	; (8000730 <LoopForever+0x10>)
   str r7, [r2]
  80005e4:	6017      	str	r7, [r2, #0]
 
@@ -1022,15 +1022,15 @@ Reset_Handler:
   // Funny thing, Cortex-M0 reset values seem to be like 0xffffffff? Well,
   // checksum in anycase takes care of that correct values are loaded.
   ldr r2, =gu32FirmwareAbsPosition // Load variable address
- 80005e6:	4a50      	ldr	r2, [pc, #320]	; (8000728 <LoopForever+0x6>)
+ 80005e6:	4a50      	ldr	r2, [pc, #320]	; (8000728 <LoopForever+0x8>)
   ldr r2, [r2] // Load variable data
  80005e8:	6812      	ldr	r2, [r2, #0]
   ldr r3, =gu32FirmwareOffset // Load variable address
- 80005ea:	4b50      	ldr	r3, [pc, #320]	; (800072c <LoopForever+0xa>)
+ 80005ea:	4b50      	ldr	r3, [pc, #320]	; (800072c <LoopForever+0xc>)
   ldr r3, [r3] // Load variable data
  80005ec:	681b      	ldr	r3, [r3, #0]
   ldr r4, =gu32FirmwareAbsOffsetChecksum // Load variable address
- 80005ee:	4c50      	ldr	r4, [pc, #320]	; (8000730 <LoopForever+0xe>)
+ 80005ee:	4c50      	ldr	r4, [pc, #320]	; (8000730 <LoopForever+0x10>)
   ldr r4, [r4] // Load variable data
  80005f0:	6824      	ldr	r4, [r4, #0]
   movs r1, r2// Calculating the checksum into r1
@@ -1043,15 +1043,15 @@ Reset_Handler:
  80005f8:	d005      	beq.n	8000606 <GotPatchLoopInit>
   // Did not match, so we need to store correct values of gu32FirmwareAbsPosition and gu32FirmwareOffset
   ldr r1, =__flash_begin; // Load variable address
- 80005fa:	494e      	ldr	r1, [pc, #312]	; (8000734 <LoopForever+0x12>)
+ 80005fa:	494e      	ldr	r1, [pc, #312]	; (8000734 <LoopForever+0x14>)
   ldr r2, =gu32FirmwareAbsPosition // Load variable address
- 80005fc:	4a4a      	ldr	r2, [pc, #296]	; (8000728 <LoopForever+0x6>)
+ 80005fc:	4a4a      	ldr	r2, [pc, #296]	; (8000728 <LoopForever+0x8>)
   str r1, [r2] // Finally store the new value to ram
  80005fe:	6011      	str	r1, [r2, #0]
   movs r1, #0 // Put zero offset
  8000600:	2100      	movs	r1, #0
   ldr r2, =gu32FirmwareOffset // Load firmware offset variable address
- 8000602:	4a4a      	ldr	r2, [pc, #296]	; (800072c <LoopForever+0xa>)
+ 8000602:	4a4a      	ldr	r2, [pc, #296]	; (800072c <LoopForever+0xc>)
   str r1, [r2] // Store zero offset
  8000604:	6011      	str	r1, [r2, #0]
 
@@ -1062,7 +1062,7 @@ StandaloneBootContinue:
 
 GotPatchLoopInit:
 	ldr r6, =gu32FirmwareOffset // Get firmware offset variable address
- 8000606:	4e49      	ldr	r6, [pc, #292]	; (800072c <LoopForever+0xa>)
+ 8000606:	4e49      	ldr	r6, [pc, #292]	; (800072c <LoopForever+0xc>)
 	ldr r6, [r6]
  8000608:	6836      	ldr	r6, [r6, #0]
 	movs r0, #0 // Loop variable
@@ -1072,9 +1072,9 @@ GotPatchLoopInit:
 
 GotPatchLoopCond:
 	ldr r1, = __ram_got_begin
- 800060c:	494a      	ldr	r1, [pc, #296]	; (8000738 <LoopForever+0x16>)
+ 800060c:	494a      	ldr	r1, [pc, #296]	; (8000738 <LoopForever+0x18>)
 	ldr r2, = __ram_got_end
- 800060e:	4a4b      	ldr	r2, [pc, #300]	; (800073c <LoopForever+0x1a>)
+ 800060e:	4a4b      	ldr	r2, [pc, #300]	; (800073c <LoopForever+0x1c>)
 	subs r2, r2, r1 // How many bytes is the lenght
  8000610:	1a52      	subs	r2, r2, r1
 	cmp r0, r2 // Check if loop is at end
@@ -1090,13 +1090,13 @@ GotPatchLoopBody:
 	adds r0, r0, #4 // Increase original loop counter r0
  8000618:	3004      	adds	r0, #4
 	ldr r2, = __ram_got_begin // Load got ram start
- 800061a:	4a47      	ldr	r2, [pc, #284]	; (8000738 <LoopForever+0x16>)
+ 800061a:	4a47      	ldr	r2, [pc, #284]	; (8000738 <LoopForever+0x18>)
 	ldr r3, = __ram_begin // Load actual ram start
- 800061c:	4b48      	ldr	r3, [pc, #288]	; (8000740 <LoopForever+0x1e>)
+ 800061c:	4b48      	ldr	r3, [pc, #288]	; (8000740 <LoopForever+0x20>)
 	subs r2, r2, r3 // r2 now has plain got offset from where ever
  800061e:	1ad2      	subs	r2, r2, r3
 	ldr r3, = __flash_begin // Start to assemble flash position
- 8000620:	4b44      	ldr	r3, [pc, #272]	; (8000734 <LoopForever+0x12>)
+ 8000620:	4b44      	ldr	r3, [pc, #272]	; (8000734 <LoopForever+0x14>)
 	adds r3, r3, r6 // Add firmware offset, which is still at r6
  8000622:	199b      	adds	r3, r3, r6
 	adds r3, r3, r2 // Add plain offset
@@ -1106,19 +1106,19 @@ GotPatchLoopBody:
 	ldr r3, [r3] // Load actual table data from flash
  8000628:	681b      	ldr	r3, [r3, #0]
 	ldr r4, =__ram_begin // Assemble limit to check if over start of ram, in which case don't modify (it is ram or a peripheral)
- 800062a:	4c45      	ldr	r4, [pc, #276]	; (8000740 <LoopForever+0x1e>)
+ 800062a:	4c45      	ldr	r4, [pc, #276]	; (8000740 <LoopForever+0x20>)
 	cmp r3, r4 // Compare address from got and start of ram
  800062c:	42a3      	cmp	r3, r4
 	bhs GotStoreTableAddressToRam // If address higher or same (hs) than start of ram, branch to copy got address as is
  800062e:	d206      	bcs.n	800063e <GotStoreTableAddressToRam>
 	ldr r4, =__flash_end // Assemble limit to check if over end of flash, in which case something is just wrong, so branch to store and hope for the best
- 8000630:	4c44      	ldr	r4, [pc, #272]	; (8000744 <LoopForever+0x22>)
+ 8000630:	4c44      	ldr	r4, [pc, #272]	; (8000744 <LoopForever+0x24>)
 	cmp r3, r4 // Compare address from got and end of flash
  8000632:	42a3      	cmp	r3, r4
 	bhs GotStoreTableAddressToRam // If address address higher or same (hs) than end of flash, branch to store got table address data and hope for the best
  8000634:	d203      	bcs.n	800063e <GotStoreTableAddressToRam>
 	ldr r4, =__flash_begin // Assemble limit to check if under start of flash, in which case something is just wrong, so branch to store and hope for the best
- 8000636:	4c3f      	ldr	r4, [pc, #252]	; (8000734 <LoopForever+0x12>)
+ 8000636:	4c3f      	ldr	r4, [pc, #252]	; (8000734 <LoopForever+0x14>)
 	cmp r3, r4 // Compare address from got and start of flash
  8000638:	42a3      	cmp	r3, r4
 	blo GotStoreTableAddressToRam // If address address lower (lo) than start of flash, branch to store got table address data and hope for the best
@@ -1130,7 +1130,7 @@ GotPatchLoopBody:
 
 GotStoreTableAddressToRam:
 	ldr r4, =__ram_begin// Start getting address in ram where to put the table address value
- 800063e:	4c40      	ldr	r4, [pc, #256]	; (8000740 <LoopForever+0x1e>)
+ 800063e:	4c40      	ldr	r4, [pc, #256]	; (8000740 <LoopForever+0x20>)
 	adds r4, r4, r2 // Add plain offset of got
  8000640:	18a4      	adds	r4, r4, r2
 	adds r4, r4, r1 // Add the original loop counter (is: 0, 4, 8, 12, ...)
@@ -1144,7 +1144,7 @@ GotStoreTableAddressToRam:
 
 GotPatchEnd:
 	ldr r0, =__ram_got_begin
- 8000648:	483b      	ldr	r0, [pc, #236]	; (8000738 <LoopForever+0x16>)
+ 8000648:	483b      	ldr	r0, [pc, #236]	; (8000738 <LoopForever+0x18>)
 	mov r9, r0 // Stupid trick to put global offset table location to r9
  800064a:	4681      	mov	r9, r0
 
@@ -1152,13 +1152,13 @@ GotPatchEnd:
 
 /* Copy the data segment initializers from flash to SRAM */
   ldr r0, =_sdata
- 800064c:	483e      	ldr	r0, [pc, #248]	; (8000748 <LoopForever+0x26>)
+ 800064c:	483e      	ldr	r0, [pc, #248]	; (8000748 <LoopForever+0x28>)
   ldr r1, =_edata
- 800064e:	493f      	ldr	r1, [pc, #252]	; (800074c <LoopForever+0x2a>)
+ 800064e:	493f      	ldr	r1, [pc, #252]	; (800074c <LoopForever+0x2c>)
   ldr r2, =_sidata
- 8000650:	4a3f      	ldr	r2, [pc, #252]	; (8000750 <LoopForever+0x2e>)
+ 8000650:	4a3f      	ldr	r2, [pc, #252]	; (8000750 <LoopForever+0x30>)
   ldr r7, =gu32FirmwareOffset // Load firmware offset variable address
- 8000652:	4f36      	ldr	r7, [pc, #216]	; (800072c <LoopForever+0xa>)
+ 8000652:	4f36      	ldr	r7, [pc, #216]	; (800072c <LoopForever+0xc>)
   ldr r7, [r7] // Load the actual firmware offset variable data
  8000654:	683f      	ldr	r7, [r7, #0]
   adds r2, r2, r7 // Patch the sidata location with offset
@@ -1190,9 +1190,9 @@ LoopCopyDataInit:
 
 /* Zero fill the bss segment. */
   ldr r2, =_sbss
- 8000668:	4a3a      	ldr	r2, [pc, #232]	; (8000754 <LoopForever+0x32>)
+ 8000668:	4a3a      	ldr	r2, [pc, #232]	; (8000754 <LoopForever+0x34>)
   ldr r4, =_ebss
- 800066a:	4c3b      	ldr	r4, [pc, #236]	; (8000758 <LoopForever+0x36>)
+ 800066a:	4c3b      	ldr	r4, [pc, #236]	; (8000758 <LoopForever+0x38>)
   movs r3, #0
  800066c:	2300      	movs	r3, #0
   b LoopFillZerobss
@@ -1204,42 +1204,42 @@ FillZerobss:
   // Here we need to check that we are not zeroing out addresses or needed symbols
 
   ldr r6, =gu32FirmwareAbsPosition // Load address of absolute firmware position variable
- 8000670:	4e2d      	ldr	r6, [pc, #180]	; (8000728 <LoopForever+0x6>)
+ 8000670:	4e2d      	ldr	r6, [pc, #180]	; (8000728 <LoopForever+0x8>)
   cmp r2, r6 // Compare with what we are going to zero
  8000672:	42b2      	cmp	r2, r6
   beq FillZerobssSkip // If we should skip zeroing, jump away
  8000674:	d00f      	beq.n	8000696 <FillZerobssSkip>
 
   ldr r6, =gu32FirmwareOffset // Load address of firmware offset variable
- 8000676:	4e2d      	ldr	r6, [pc, #180]	; (800072c <LoopForever+0xa>)
+ 8000676:	4e2d      	ldr	r6, [pc, #180]	; (800072c <LoopForever+0xc>)
   cmp r2, r6 // Compare with what we are going to zero
  8000678:	42b2      	cmp	r2, r6
   beq FillZerobssSkip // If we should skip zeroing, jump away
  800067a:	d00c      	beq.n	8000696 <FillZerobssSkip>
 
   ldr r6, =gu32FirmwareAbsOffsetChecksum // Load address of firmware position and offset checksum
- 800067c:	4e2c      	ldr	r6, [pc, #176]	; (8000730 <LoopForever+0xe>)
+ 800067c:	4e2c      	ldr	r6, [pc, #176]	; (8000730 <LoopForever+0x10>)
   cmp r2, r6 // Compare with what we are going to zero
  800067e:	42b2      	cmp	r2, r6
   beq FillZerobssSkip // If we should skip zeroing, jump away
  8000680:	d009      	beq.n	8000696 <FillZerobssSkip>
 
   ldr r6, =__flash_begin // Load address of flash begin symbol
- 8000682:	4e2c      	ldr	r6, [pc, #176]	; (8000734 <LoopForever+0x12>)
+ 8000682:	4e2c      	ldr	r6, [pc, #176]	; (8000734 <LoopForever+0x14>)
   cmp r2, r6 // Compare with what we are going to zero
  8000684:	42b2      	cmp	r2, r6
   beq FillZerobssSkip // If we should skip zeroing, jump away
  8000686:	d006      	beq.n	8000696 <FillZerobssSkip>
 
   ldr r6, =__ram_vector_table_begin // Load address of ram vector table begin symbo
- 8000688:	4e34      	ldr	r6, [pc, #208]	; (800075c <LoopForever+0x3a>)
+ 8000688:	4e34      	ldr	r6, [pc, #208]	; (800075c <LoopForever+0x3c>)
   cmp r2, r6 // Compare with what we are going to zero
  800068a:	42b2      	cmp	r2, r6
   beq FillZerobssSkip // If we should skip zeroing, jump away
  800068c:	d003      	beq.n	8000696 <FillZerobssSkip>
 
   ldr r6, =__ram_vector_table_end // Load address of ram vector table end symbol
- 800068e:	4e34      	ldr	r6, [pc, #208]	; (8000760 <LoopForever+0x3e>)
+ 800068e:	4e34      	ldr	r6, [pc, #208]	; (8000760 <LoopForever+0x40>)
   cmp r2, r6 // Compare with what we are going to zero
  8000690:	42b2      	cmp	r2, r6
   beq FillZerobssSkip // If we should skip zeroing, jump away
@@ -1277,200 +1277,199 @@ VectorTableCopyPatchInit:
 
 VectorTableCopyPatchLoopCond:
   ldr r2, =__flash_vector_table_begin // Need vector table beginning for pointer
- 80006a0:	4a30      	ldr	r2, [pc, #192]	; (8000764 <LoopForever+0x42>)
+ 80006a0:	4a30      	ldr	r2, [pc, #192]	; (8000764 <LoopForever+0x44>)
   ldr r3, =__flash_vector_table_end // And need end for checking loop
- 80006a2:	4b31      	ldr	r3, [pc, #196]	; (8000768 <LoopForever+0x46>)
+ 80006a2:	4b31      	ldr	r3, [pc, #196]	; (8000768 <LoopForever+0x48>)
   ldr r4, =gu32FirmwareOffset // Need also data offset variable address
- 80006a4:	4c21      	ldr	r4, [pc, #132]	; (800072c <LoopForever+0xa>)
+ 80006a4:	4c21      	ldr	r4, [pc, #132]	; (800072c <LoopForever+0xc>)
   ldr r4, [r4] // And the actual offset value
  80006a6:	6824      	ldr	r4, [r4, #0]
   adds r2, r2, r4 // Patching flash vector table begin to honour offset
  80006a8:	1912      	adds	r2, r2, r4
   adds r3, r3, r4 // Patching flash vector table end to honour offset
  80006aa:	191b      	adds	r3, r3, r4
-  adds r1, r0, r2 // Pointer value is loop variable + flash vector table begin + offset
+  adds r1, r0, r2 // Pointer value is loop variable + offsetted flash vector table begin
  80006ac:	1881      	adds	r1, r0, r2
-  adds r1, r1, r4 // And the said offset
- 80006ae:	1909      	adds	r1, r1, r4
   cmp r1, r3 // Compare pointer against flash end
- 80006b0:	4299      	cmp	r1, r3
+ 80006ae:	4299      	cmp	r1, r3
   bhs VectorTableCopyPatchEnd // If getting past limits, go to end
- 80006b2:	d20e      	bcs.n	80006d2 <VectorTableCopyPatchEnd>
+ 80006b0:	d20e      	bcs.n	80006d0 <VectorTableCopyPatchEnd>
 
-080006b4 <VectorTableCopyPatchLoopBody>:
+080006b2 <VectorTableCopyPatchLoopBody>:
 
 VectorTableCopyPatchLoopBody:
   ldr r2, [r1] // Load the actual data via pointer
- 80006b4:	680a      	ldr	r2, [r1, #0]
+ 80006b2:	680a      	ldr	r2, [r1, #0]
   ldr r3, =__flash_begin // Need flash begin boundary for checking
- 80006b6:	4b1f      	ldr	r3, [pc, #124]	; (8000734 <LoopForever+0x12>)
+ 80006b4:	4b1f      	ldr	r3, [pc, #124]	; (8000734 <LoopForever+0x14>)
   ldr r4, =__flash_end // Need also flash end boundary for checking
- 80006b8:	4c22      	ldr	r4, [pc, #136]	; (8000744 <LoopForever+0x22>)
+ 80006b6:	4c23      	ldr	r4, [pc, #140]	; (8000744 <LoopForever+0x24>)
   cmp r2, r3 // Comparing loaded data to flash begin
- 80006ba:	429a      	cmp	r2, r3
+ 80006b8:	429a      	cmp	r2, r3
   blo VectorTableStoreData // If less than flash begin, jump to store
- 80006bc:	d304      	bcc.n	80006c8 <VectorTableStoreData>
+ 80006ba:	d304      	bcc.n	80006c6 <VectorTableStoreData>
   cmp r2, r4 // Comparing loaded data to flash end
- 80006be:	42a2      	cmp	r2, r4
+ 80006bc:	42a2      	cmp	r2, r4
   bhs VectorTableStoreData // If more than or equal to end, jump to store
- 80006c0:	d202      	bcs.n	80006c8 <VectorTableStoreData>
+ 80006be:	d202      	bcs.n	80006c6 <VectorTableStoreData>
 
-080006c2 <VectorTablePatchData>:
+080006c0 <VectorTablePatchData>:
 
 VectorTablePatchData:
   ldr r3, =gu32FirmwareOffset // Need data offset variable address
- 80006c2:	4b1a      	ldr	r3, [pc, #104]	; (800072c <LoopForever+0xa>)
+ 80006c0:	4b1a      	ldr	r3, [pc, #104]	; (800072c <LoopForever+0xc>)
   ldr r3, [r3] // And then the actual data
- 80006c4:	681b      	ldr	r3, [r3, #0]
+ 80006c2:	681b      	ldr	r3, [r3, #0]
   adds r2, r2, r3 // Patch the data
- 80006c6:	18d2      	adds	r2, r2, r3
+ 80006c4:	18d2      	adds	r2, r2, r3
 
-080006c8 <VectorTableStoreData>:
+080006c6 <VectorTableStoreData>:
 
 VectorTableStoreData:
   ldr r3, =__ram_vector_table_begin // Get vector table begin in ram for ram data pointer
- 80006c8:	4b24      	ldr	r3, [pc, #144]	; (800075c <LoopForever+0x3a>)
+ 80006c6:	4b25      	ldr	r3, [pc, #148]	; (800075c <LoopForever+0x3c>)
   adds r3, r3, r0 // Add loop variable
- 80006ca:	181b      	adds	r3, r3, r0
+ 80006c8:	181b      	adds	r3, r3, r0
   str r2, [r3] // Store the data
- 80006cc:	601a      	str	r2, [r3, #0]
+ 80006ca:	601a      	str	r2, [r3, #0]
 
-080006ce <VectorTableLoopIncrements>:
+080006cc <VectorTableLoopIncrements>:
 
 VectorTableLoopIncrements:
   adds r0, r0, #4 // Increment loop
- 80006ce:	3004      	adds	r0, #4
+ 80006cc:	3004      	adds	r0, #4
   b VectorTableCopyPatchLoopCond // Jump to loop condition checking
- 80006d0:	e7e6      	b.n	80006a0 <VectorTableCopyPatchLoopCond>
+ 80006ce:	e7e7      	b.n	80006a0 <VectorTableCopyPatchLoopCond>
 
-080006d2 <VectorTableCopyPatchEnd>:
-*/
+080006d0 <VectorTableCopyPatchEnd>:
+VectorTableCopyPatchEnd:
 
 
 
 /* Call the clock system intitialization function.*/
   bl  SystemInit
- 80006d2:	f7ff ff63 	bl	800059c <SystemInit>
+ 80006d0:	f7ff ff64 	bl	800059c <SystemInit>
 
-080006d6 <CallPreinitsInit>:
+080006d4 <CallPreinitsInit>:
 
 
 
 // Make our own __libc_init_array
 CallPreinitsInit:
 	ldr r7, =gu32FirmwareOffset
- 80006d6:	4f15      	ldr	r7, [pc, #84]	; (800072c <LoopForever+0xa>)
+ 80006d4:	4f15      	ldr	r7, [pc, #84]	; (800072c <LoopForever+0xc>)
 	ldr r7, [r7]
- 80006d8:	683f      	ldr	r7, [r7, #0]
+ 80006d6:	683f      	ldr	r7, [r7, #0]
 	ldr r0, =__preinit_array_start
- 80006da:	4824      	ldr	r0, [pc, #144]	; (800076c <LoopForever+0x4a>)
+ 80006d8:	4824      	ldr	r0, [pc, #144]	; (800076c <LoopForever+0x4c>)
 	adds r0, r7
- 80006dc:	19c0      	adds	r0, r0, r7
+ 80006da:	19c0      	adds	r0, r0, r7
 	ldr r1, =__preinit_array_end
- 80006de:	4924      	ldr	r1, [pc, #144]	; (8000770 <LoopForever+0x4e>)
+ 80006dc:	4924      	ldr	r1, [pc, #144]	; (8000770 <LoopForever+0x50>)
 	adds r1, r7
- 80006e0:	19c9      	adds	r1, r1, r7
+ 80006de:	19c9      	adds	r1, r1, r7
 
-080006e2 <CallPreinitsLoopCond>:
+080006e0 <CallPreinitsLoopCond>:
 
 CallPreinitsLoopCond:
 	cmp r0, r1
- 80006e2:	4288      	cmp	r0, r1
+ 80006e0:	4288      	cmp	r0, r1
 	beq CallPreinitsEnd// If same, it is at end, go away
- 80006e4:	d007      	beq.n	80006f6 <CallPreinitsEnd>
+ 80006e2:	d007      	beq.n	80006f4 <CallPreinitsEnd>
 
-080006e6 <CallPreinitsLoop>:
+080006e4 <CallPreinitsLoop>:
 
 CallPreinitsLoop:
 	ldr r5, =__init_array_start
- 80006e6:	4d23      	ldr	r5, [pc, #140]	; (8000774 <LoopForever+0x52>)
+ 80006e4:	4d23      	ldr	r5, [pc, #140]	; (8000774 <LoopForever+0x54>)
 	ldr r4, =__init_array_end // Yes, order is funny to say the least
- 80006e8:	4c23      	ldr	r4, [pc, #140]	; (8000778 <LoopForever+0x56>)
+ 80006e6:	4c24      	ldr	r4, [pc, #144]	; (8000778 <LoopForever+0x58>)
 	ldr r3, [r0]
- 80006ea:	6803      	ldr	r3, [r0, #0]
+ 80006e8:	6803      	ldr	r3, [r0, #0]
 	push {r0, r1, r2, r3, r4, r5, r6, r7} // Save context because calling externals
- 80006ec:	b4ff      	push	{r0, r1, r2, r3, r4, r5, r6, r7}
+ 80006ea:	b4ff      	push	{r0, r1, r2, r3, r4, r5, r6, r7}
 	blx r3
- 80006ee:	4798      	blx	r3
+ 80006ec:	4798      	blx	r3
 	pop {r0, r1, r2, r3, r4, r5, r6, r7} // Retrieve context
- 80006f0:	bcff      	pop	{r0, r1, r2, r3, r4, r5, r6, r7}
+ 80006ee:	bcff      	pop	{r0, r1, r2, r3, r4, r5, r6, r7}
 	adds r0, r0, #4
- 80006f2:	3004      	adds	r0, #4
+ 80006f0:	3004      	adds	r0, #4
 	b CallPreinitsLoopCond
- 80006f4:	e7f5      	b.n	80006e2 <CallPreinitsLoopCond>
+ 80006f2:	e7f5      	b.n	80006e0 <CallPreinitsLoopCond>
 
-080006f6 <CallPreinitsEnd>:
+080006f4 <CallPreinitsEnd>:
 
 CallPreinitsEnd:
 	ldr r3, =_init
- 80006f6:	4b21      	ldr	r3, [pc, #132]	; (800077c <LoopForever+0x5a>)
+ 80006f4:	4b21      	ldr	r3, [pc, #132]	; (800077c <LoopForever+0x5c>)
 	adds r3, r7
- 80006f8:	19db      	adds	r3, r3, r7
+ 80006f6:	19db      	adds	r3, r3, r7
 	ldr r5, =__init_array_start
- 80006fa:	4d1e      	ldr	r5, [pc, #120]	; (8000774 <LoopForever+0x52>)
+ 80006f8:	4d1e      	ldr	r5, [pc, #120]	; (8000774 <LoopForever+0x54>)
 	adds r5, r7
- 80006fc:	19ed      	adds	r5, r5, r7
+ 80006fa:	19ed      	adds	r5, r5, r7
 	ldr r4, =__init_array_end
- 80006fe:	4c1e      	ldr	r4, [pc, #120]	; (8000778 <LoopForever+0x56>)
+ 80006fc:	4c1e      	ldr	r4, [pc, #120]	; (8000778 <LoopForever+0x58>)
 	adds r4, r7
- 8000700:	19e4      	adds	r4, r4, r7
+ 80006fe:	19e4      	adds	r4, r4, r7
   push {r0, r1, r2, r3, r4, r5, r6, r7} // Save context because calling externals
- 8000702:	b4ff      	push	{r0, r1, r2, r3, r4, r5, r6, r7}
+ 8000700:	b4ff      	push	{r0, r1, r2, r3, r4, r5, r6, r7}
   blx r3
- 8000704:	4798      	blx	r3
+ 8000702:	4798      	blx	r3
   pop {r0, r1, r2, r3, r4, r5, r6, r7} // Retrieve context
- 8000706:	bcff      	pop	{r0, r1, r2, r3, r4, r5, r6, r7}
+ 8000704:	bcff      	pop	{r0, r1, r2, r3, r4, r5, r6, r7}
 
-08000708 <CallInitsInit>:
+08000706 <CallInitsInit>:
 
 CallInitsInit:
 	ldr r7, =gu32FirmwareOffset
- 8000708:	4f08      	ldr	r7, [pc, #32]	; (800072c <LoopForever+0xa>)
+ 8000706:	4f09      	ldr	r7, [pc, #36]	; (800072c <LoopForever+0xc>)
 	ldr r7, [r7]
- 800070a:	683f      	ldr	r7, [r7, #0]
+ 8000708:	683f      	ldr	r7, [r7, #0]
 
-0800070c <CallInitsLoopCond>:
+0800070a <CallInitsLoopCond>:
 
 CallInitsLoopCond:
 	cmp r5, r4
- 800070c:	42a5      	cmp	r5, r4
+ 800070a:	42a5      	cmp	r5, r4
 	beq CallInitsEnd
- 800070e:	d006      	beq.n	800071e <CallInitsEnd>
+ 800070c:	d006      	beq.n	800071c <CallInitsEnd>
 
-08000710 <CallInitsLoop>:
+0800070e <CallInitsLoop>:
 
 CallInitsLoop:
 	ldr r3, [r5]
- 8000710:	682b      	ldr	r3, [r5, #0]
+ 800070e:	682b      	ldr	r3, [r5, #0]
 	add r3, r3, r7
- 8000712:	443b      	add	r3, r7
+ 8000710:	443b      	add	r3, r7
   push {r0, r1, r2, r3, r4, r5, r6, r7} // Save context because calling externals
- 8000714:	b4ff      	push	{r0, r1, r2, r3, r4, r5, r6, r7}
+ 8000712:	b4ff      	push	{r0, r1, r2, r3, r4, r5, r6, r7}
   blx r3
- 8000716:	4798      	blx	r3
+ 8000714:	4798      	blx	r3
   pop {r0, r1, r2, r3, r4, r5, r6, r7} // Retrieve context
- 8000718:	bcff      	pop	{r0, r1, r2, r3, r4, r5, r6, r7}
+ 8000716:	bcff      	pop	{r0, r1, r2, r3, r4, r5, r6, r7}
 	adds r5, r5, #4
- 800071a:	3504      	adds	r5, #4
+ 8000718:	3504      	adds	r5, #4
 	b CallInitsLoopCond
- 800071c:	e7f6      	b.n	800070c <CallInitsLoopCond>
+ 800071a:	e7f6      	b.n	800070a <CallInitsLoopCond>
 
-0800071e <CallInitsEnd>:
+0800071c <CallInitsEnd>:
 CallInitsEnd:
 
 
 
 /* Call the application's entry point.*/
   bl main
- 800071e:	f7ff fd8f 	bl	8000240 <main>
+ 800071c:	f7ff fd90 	bl	8000240 <main>
 
-08000722 <LoopForever>:
+08000720 <LoopForever>:
 
 
 
 LoopForever:
   b LoopForever
- 8000722:	e7fe      	b.n	8000722 <LoopForever>
+ 8000720:	e7fe      	b.n	8000720 <LoopForever>
+ 8000722:	0000      	.short	0x0000
   ldr   r0, =_estack
  8000724:	20004000 	.word	0x20004000
   ldr r2, =gu32FirmwareAbsPosition

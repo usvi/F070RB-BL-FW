@@ -45,7 +45,7 @@ defined in linker script */
 /* end address for the .bss section. defined in linker script */
 .word _ebss
 
-
+// Symbols from linker, introduced here just in case
 .word __flash_begin
 .word __ram_vector_table_begin
 .word __ram_vector_table_end
@@ -227,8 +227,7 @@ VectorTableCopyPatchLoopCond:
   ldr r4, [r4] // And the actual offset value
   adds r2, r2, r4 // Patching flash vector table begin to honour offset
   adds r3, r3, r4 // Patching flash vector table end to honour offset
-  adds r1, r0, r2 // Pointer value is loop variable + flash vector table begin + offset
-  adds r1, r1, r4 // And the said offset
+  adds r1, r0, r2 // Pointer value is loop variable + offsetted flash vector table begin
   cmp r1, r3 // Compare pointer against flash end
   bhs VectorTableCopyPatchEnd // If getting past limits, go to end
 
@@ -256,45 +255,6 @@ VectorTableLoopIncrements:
   b VectorTableCopyPatchLoopCond // Jump to loop condition checking
 
 VectorTableCopyPatchEnd:
-
-
-
-
-
-  /*
-  ldr r1, =__flash_vector_table_begin // Begin flash boundary
-  ldr r2, =__flash_vector_table_end // Boundary to check if we are done
-  ldr r3, =__ram_vector_table_begin // Where in ram to put next
-  ldr r4, =__flash_begin // Where does flash begin so we can check if values is to be patched
-  ldr r5, =__flash_end // Where does flash end? Only patch values if between.
-  ldr r6, =gu32FirmwareOffset // Load firmware offset variable address
-  ldr r6, [r5] // Load actual firmware offset value
-  movs r7, #0 // Pointer (just introduction here)
-  */
-/*
-VectorTableCopyPatchLoopCond:
-
-  adds r7, r0, r1 // Update
-  cmp r7, r2 // Compare pointer to end of vector table to see if we are done
-  bhs VectorTableCopyPatchEnd // Jump away if past or at end (well, basically past end)
-
-VectorTableCopyPatchLoopBody:
-  ldr r6, [r0] // Load the actual vector table data via pointer
-  cmp r6, r3 // Compare if value less than flash begin
-  blo VectorTableStore // Skip to copy without patching
-  cmp r6, r4 // Compare if value higher than flash end
-  bhs VectorTableStore // Skip to copy without patching
-
-VectorTablePatch:
-  ldr r7, =__flash_vector_table_begin // Start assembling difference from beginning
-
-  adds r6, r6, r5 // Add the increment to flash value
-
-VectorTableStore:
-  str r6, []
-
-VectorTableLoopCondIncrements:
-*/
 
 
 
