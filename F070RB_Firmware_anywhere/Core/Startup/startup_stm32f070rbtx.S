@@ -45,10 +45,9 @@ defined in linker script */
 /* end address for the .bss section. defined in linker script */
 .word _ebss
 
-// Symbols from linker, introduced here just in case
-.word __flash_begin
-.word __ram_vector_table_begin
-.word __ram_vector_table_end
+#include "..\Inc\pic_conf.h"
+
+
 
 
   .section .text.Reset_Handler
@@ -104,58 +103,54 @@ StandaloneBootContinue:
 
 
 
-  // If GOT in RAM (check linker file) this needs to be enabled with all the following
-  // gcc compiler options:
-  //
-  // -fpic
-  // -msingle-pic-base
-  // -mno-pic-data-is-text-relative
-  // -mpic-register=r9
-  //
+#ifdef GOT_IN_RAM
+
 GotPatchLoopInit:
-	ldr r6, =gu32FirmwareOffset // Get firmware offset variable address
-	ldr r6, [r6]
-	movs r0, #0 // Loop variable
+  ldr r6, =gu32FirmwareOffset // Get firmware offset variable address
+  ldr r6, [r6]
+  movs r0, #0 // Loop variable
 
 GotPatchLoopCond:
-	ldr r1, = __ram_got_begin
-	ldr r2, = __ram_got_end
-	subs r2, r2, r1 // How many bytes is the lenght
-	cmp r0, r2 // Check if loop is at end
-	bhs GotPatchEnd // Jump to end if compare equal or past end
+  ldr r1, = __ram_got_begin
+  ldr r2, = __ram_got_end
+  subs r2, r2, r1 // How many bytes is the lenght
+  cmp r0, r2 // Check if loop is at end
+  bhs GotPatchEnd // Jump to end if compare equal or past end
 
 GotPatchLoopBody:
-	movs r1, r0 // Copy original loop counter value to r1
-	adds r0, r0, #4 // Increase original loop counter r0
-	ldr r2, = __ram_got_begin // Load got ram start
-	ldr r3, = __ram_begin // Load actual ram start
-	subs r2, r2, r3 // r2 now has plain got offset from where ever
-	ldr r3, = __flash_begin // Start to assemble flash position
-	adds r3, r3, r6 // Add firmware offset, which is still at r6
-	adds r3, r3, r2 // Add plain offset
-	adds r3, r3, r1 // Add loop offset to reading from flash
-	ldr r3, [r3] // Load actual table data from flash
-	ldr r4, =__ram_begin // Assemble limit to check if over start of ram, in which case don't modify (it is ram or a peripheral)
-	cmp r3, r4 // Compare address from got and start of ram
-	bhs GotStoreTableAddressToRam // If address higher or same (hs) than start of ram, branch to copy got address as is
-	ldr r4, =__flash_end // Assemble limit to check if over end of flash, in which case something is just wrong, so branch to store and hope for the best
-	cmp r3, r4 // Compare address from got and end of flash
-	bhs GotStoreTableAddressToRam // If address address higher or same (hs) than end of flash, branch to store got table address data and hope for the best
-	ldr r4, =__flash_begin // Assemble limit to check if under start of flash, in which case something is just wrong, so branch to store and hope for the best
-	cmp r3, r4 // Compare address from got and start of flash
-	blo GotStoreTableAddressToRam // If address address lower (lo) than start of flash, branch to store got table address data and hope for the best
-	adds r3, r3, r6 // Finally a position in flash. Add the offset.
+  movs r1, r0 // Copy original loop counter value to r1
+  adds r0, r0, #4 // Increase original loop counter r0
+  ldr r2, = __ram_got_begin // Load got ram start
+  ldr r3, = __ram_begin // Load actual ram start
+  subs r2, r2, r3 // r2 now has plain got offset from where ever
+  ldr r3, = __flash_begin // Start to assemble flash position
+  adds r3, r3, r6 // Add firmware offset, which is still at r6
+  adds r3, r3, r2 // Add plain offset
+  adds r3, r3, r1 // Add loop offset to reading from flash
+  ldr r3, [r3] // Load actual table data from flash
+  ldr r4, =__ram_begin // Assemble limit to check if over start of ram, in which case don't modify (it is ram or a peripheral)
+  cmp r3, r4 // Compare address from got and start of ram
+  bhs GotStoreTableAddressToRam // If address higher or same (hs) than start of ram, branch to copy got address as is
+  ldr r4, =__flash_end // Assemble limit to check if over end of flash, in which case something is just wrong, so branch to store and hope for the best
+  cmp r3, r4 // Compare address from got and end of flash
+  bhs GotStoreTableAddressToRam // If address address higher or same (hs) than end of flash, branch to store got table address data and hope for the best
+  ldr r4, =__flash_begin // Assemble limit to check if under start of flash, in which case something is just wrong, so branch to store and hope for the best
+  cmp r3, r4 // Compare address from got and start of flash
+  blo GotStoreTableAddressToRam // If address address lower (lo) than start of flash, branch to store got table address data and hope for the best
+  adds r3, r3, r6 // Finally a position in flash. Add the offset.
 
 GotStoreTableAddressToRam:
-	ldr r4, =__ram_begin// Start getting address in ram where to put the table address value
-	adds r4, r4, r2 // Add plain offset of got
-	adds r4, r4, r1 // Add the original loop counter (is: 0, 4, 8, 12, ...)
-	str r3, [r4] // Add the table address to ram
-	b GotPatchLoopCond // And go to check the loop
+  ldr r4, =__ram_begin// Start getting address in ram where to put the table address value
+  adds r4, r4, r2 // Add plain offset of got
+  adds r4, r4, r1 // Add the original loop counter (is: 0, 4, 8, 12, ...)
+  str r3, [r4] // Add the table address to ram
+  b GotPatchLoopCond // And go to check the loop
 
 GotPatchEnd:
   ldr r0, =__ram_got_begin
   mov r9, r0 // Stupid trick to put global offset table location to r9
+
+#endif /* #ifdef GOT_IN_RAM */
 
 
 
@@ -273,54 +268,54 @@ VectorTableCopyPatchEnd:
 
 // Make our own __libc_init_array
 CallPreinitsInit:
-	ldr r7, =gu32FirmwareOffset
-	ldr r7, [r7]
-	ldr r0, =__preinit_array_start
-	adds r0, r7
-	ldr r1, =__preinit_array_end
-	adds r1, r7
+  ldr r7, =gu32FirmwareOffset
+  ldr r7, [r7]
+  ldr r0, =__preinit_array_start
+  adds r0, r7
+  ldr r1, =__preinit_array_end
+  adds r1, r7
 
 CallPreinitsLoopCond:
-	cmp r0, r1
-	beq CallPreinitsEnd// If same, it is at end, go away
+  cmp r0, r1
+  beq CallPreinitsEnd// If same, it is at end, go away
 
 CallPreinitsLoop:
-	ldr r5, =__init_array_start
-	ldr r4, =__init_array_end // Yes, order is funny to say the least
-	ldr r3, [r0]
-	push {r0, r1, r2, r3, r4, r5, r6, r7} // Save context because calling externals
-	blx r3
-	pop {r0, r1, r2, r3, r4, r5, r6, r7} // Retrieve context
-	adds r0, r0, #4
-	b CallPreinitsLoopCond
+  ldr r5, =__init_array_start
+  ldr r4, =__init_array_end // Yes, order is funny to say the least
+  ldr r3, [r0]
+  push {r0, r1, r2, r3, r4, r5, r6, r7} // Save context because calling externals
+  blx r3
+  pop {r0, r1, r2, r3, r4, r5, r6, r7} // Retrieve context
+  adds r0, r0, #4
+  b CallPreinitsLoopCond
 
 CallPreinitsEnd:
-	ldr r3, =_init
-	adds r3, r7
-	ldr r5, =__init_array_start
-	adds r5, r7
-	ldr r4, =__init_array_end
-	adds r4, r7
+  ldr r3, =_init
+  adds r3, r7
+  ldr r5, =__init_array_start
+  adds r5, r7
+  ldr r4, =__init_array_end
+  adds r4, r7
   push {r0, r1, r2, r3, r4, r5, r6, r7} // Save context because calling externals
   blx r3
   pop {r0, r1, r2, r3, r4, r5, r6, r7} // Retrieve context
 
 CallInitsInit:
-	ldr r7, =gu32FirmwareOffset
-	ldr r7, [r7]
+  ldr r7, =gu32FirmwareOffset
+  ldr r7, [r7]
 
 CallInitsLoopCond:
-	cmp r5, r4
-	beq CallInitsEnd
+  cmp r5, r4
+  beq CallInitsEnd
 
 CallInitsLoop:
-	ldr r3, [r5]
-	add r3, r3, r7
+  ldr r3, [r5]
+  add r3, r3, r7
   push {r0, r1, r2, r3, r4, r5, r6, r7} // Save context because calling externals
   blx r3
   pop {r0, r1, r2, r3, r4, r5, r6, r7} // Retrieve context
-	adds r5, r5, #4
-	b CallInitsLoopCond
+  adds r5, r5, #4
+  b CallInitsLoopCond
 
 CallInitsEnd:
 

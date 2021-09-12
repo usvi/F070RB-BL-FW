@@ -61,6 +61,15 @@ SECTIONS
   __flash_vector_table_begin = LOADADDR(.isr_vector) ;
   __flash_vector_table_end = __flash_vector_table_begin + __ram_vector_table_end - __ram_vector_table_begin ;
   
+  /* GOT variant where it is run from flash */
+  .got :
+  {
+    . = ALIGN(4);
+    *(.got)
+  } >FLASH
+
+  /* GOT variant where it is relocated to RAM */
+  /*
   .got :
   {
     . = ALIGN(4);
@@ -70,6 +79,7 @@ SECTIONS
   } >RAM AT> FLASH
   __flash_got_begin = LOADADDR(.got) ;
   __flash_got_end = __flash_got_begin + __ram_got_end - __ram_got_begin ;
+  */
       
   /* The program code and other data into "FLASH" Rom type memory */
   .text :
