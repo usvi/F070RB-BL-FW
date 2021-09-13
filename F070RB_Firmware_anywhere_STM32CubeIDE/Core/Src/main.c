@@ -20,11 +20,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-TIM_HandleTypeDef htim16;
+TIM_HandleTypeDef gtHtim16;
 
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_TIM16_Init(void);
+static void MX_TIM16_DeInit(void);
 
 /**
   * @brief  The application entry point.
@@ -37,8 +38,9 @@ int main(void)
   HAL_Init();
   SystemClock_Config();
   MX_GPIO_Init();
+  MX_TIM16_DeInit(); // Init may fail if not de-inited first
   MX_TIM16_Init();
-  HAL_TIM_Base_Start_IT(&htim16);
+  HAL_TIM_Base_Start_IT(&gtHtim16);
   __enable_irq();
 
   while (1)
@@ -103,17 +105,15 @@ static void MX_TIM16_Init(void)
   /* USER CODE BEGIN TIM16_Init 1 */
 
   /* USER CODE END TIM16_Init 1 */
-  htim16.Instance = TIM16;
-  htim16.Init.Prescaler = 48000 - 1;
-  htim16.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim16.Init.Period = 1000;
-  htim16.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim16.Init.RepetitionCounter = 0;
-  htim16.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  gtHtim16.Instance = TIM16;
+  gtHtim16.Init.Prescaler = 48000 - 1;
+  gtHtim16.Init.CounterMode = TIM_COUNTERMODE_UP;
+  gtHtim16.Init.Period = 1000;
+  gtHtim16.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  gtHtim16.Init.RepetitionCounter = 0;
+  gtHtim16.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 
-  HAL_TIM_Base_DeInit(&htim16);
-
-  if (HAL_TIM_Base_Init(&htim16) != HAL_OK)
+  if (HAL_TIM_Base_Init(&gtHtim16) != HAL_OK)
   {
     Error_Handler();
   }
@@ -123,10 +123,15 @@ static void MX_TIM16_Init(void)
 
 }
 
+static void MX_TIM16_DeInit(void)
+{
+  HAL_TIM_Base_DeInit(&gtHtim16);
+}
+
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  if (htim == &htim16)
+  if (htim == &gtHtim16)
   {
     HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
   }
