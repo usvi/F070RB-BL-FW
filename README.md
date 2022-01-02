@@ -1,10 +1,13 @@
+F070RB-BL-FW
+
 # NUCLEO F070RB Bootloader and PIC Firmware Image
 
-This repository is for implementing how to get STM32 NUCLEO-F070RB evaluation board to boot position independent firmware image code from an *arbitrary* location using custom bootloader. So to boot the same firmware blob from whatever location. (Of course the bootloader must know the address.) And we are using real jumps, not calling the blob as library.
+This repository is for implementing how to get STM32 NUCLEO-F070RB evaluation board to boot position independent code (pic) firmware image. It is actual jump boot, not some blob function call thing.
 
 Quick statuses
 
-Bootloader: **Works. Can jump to application firmware and to even itself :D**
+Bootloader: **Works. Automaticly jumps to first non-empty position in firmware area.**
 
-Firmware_anywhere: **Works with all addresses (aligned to 4 bytes)!**
+Firmware_anywhere: **Works with all addresses sufficiently alignedwhen booted by bootloader. Works also standalone.**
 
+One can try for example these addresses, they should all work: 0x8005000, 0x8010000, 0x8015000, 0x801A800, 0x801B800
