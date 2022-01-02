@@ -45,9 +45,6 @@ defined in linker script */
 /* end address for the .bss section. defined in linker script */
 .word _ebss
 
-#include "..\Inc\pic_conf.h"
-
-
 
 
   .section .text.Reset_Handler
@@ -103,8 +100,6 @@ BootloadedBootContinue:
 
 
 
-#ifdef GOT_IN_RAM
-
 GlobalOffsetTableCopyPatchInit:
   movs r0, #0 // Loop variable
   movs r1, #0 // Pointer (just introduction)
@@ -146,8 +141,6 @@ GlobalOffsetTableLoopIncrements:
 GlobalOffsetTableCopyPatchEnd:
   ldr r0, =__ram_global_offset_table_begin
   mov r9, r0 // Stupid trick to put global offset table location to r9, for Cortex-M0
-
-#endif /* #ifdef GOT_IN_RAM */
 
 
 

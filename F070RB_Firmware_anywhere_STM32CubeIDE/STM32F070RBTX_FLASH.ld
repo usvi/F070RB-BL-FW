@@ -49,9 +49,10 @@ __flash_end = ORIGIN(FLASH) + LENGTH(FLASH) ;
 SECTIONS
 {
   /* Interrupt vector table is at RAM, must be loaded by ourselves from flash. */
+  /* There is not such strict alignment requirement as Cortex-M0 does not have VTOR. */
   .isr_vector :
   {
-    . = ALIGN(256);
+    . = ALIGN(4);
     __ram_vector_table_begin = . ;
     KEEP(*(.isr_vector))
     __ram_vector_table_end = . ;
@@ -67,18 +68,7 @@ SECTIONS
    * from RAM requires additional setup which is described in Inc/pic_conf.h
    */
   
-  /* Global Offset Table variant where it is run from flash */
-  /**/
-  .got :
-  {
-    . = ALIGN(4);
-    *(.got)
-  } >FLASH
-  /**/
-
-
-  /* Global Offset Table variant where it is relocated to RAM */
-  /*
+  /* Global Offset Table is relocated to RAM. */
   .got :
   {
     . = ALIGN(4);
@@ -88,7 +78,6 @@ SECTIONS
   } >RAM AT> FLASH
   __flash_global_offset_table_begin = LOADADDR(.got) ;
   __flash_global_offset_table_end = __flash_global_offset_table_begin + __ram_global_offset_table_end - __ram_global_offset_table_begin ;
-  /**/
 
       
   /* The program code and other data into "FLASH" Rom type memory */

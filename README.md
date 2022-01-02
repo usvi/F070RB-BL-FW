@@ -6,5 +6,5 @@ Quick statuses
 
 Bootloader: **Works. Can jump to application firmware and to even itself :D**
 
-Firmware_anywhere: **Works with all addresses!**
+Firmware_anywhere: **Works with all addresses (aligned to 4 bytes)!**
 
