@@ -8,6 +8,6 @@ Quick statuses
 
 Bootloader: **Works. Automaticly jumps to first non-empty position in firmware area.**
 
-Firmware_anywhere: **Works with all addresses sufficiently alignedwhen booted by bootloader. Works also standalone.**
+Firmware_anywhere: **Works with all addresses sufficiently aligned when booted by bootloader. Works also standalone.**
 
 One can try for example these addresses, they should all work: 0x8005000, 0x8010000, 0x8015000, 0x801A800, 0x801B800
