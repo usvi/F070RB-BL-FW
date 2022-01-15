@@ -52,7 +52,10 @@ SECTIONS
   /* There is not such strict alignment requirement as Cortex-M0 does not have VTOR. */
   .isr_vector :
   {
-    . = ALIGN(4);
+    /* Isr vectors aligned to 512 bytes so we can use same common functions in jumping. */
+    /* Cortex-M0 does not need this per se. */
+
+    . = ALIGN(512);
     __ram_vector_table_begin = . ;
     KEEP(*(.isr_vector))
     __ram_vector_table_end = . ;

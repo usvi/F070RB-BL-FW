@@ -48,10 +48,12 @@ __flash_fwarea_end = ORIGIN(FLASH_FWAREA) + LENGTH(FLASH_FWAREA) ;
 /* Sections */
 SECTIONS
 {
-  /* The startup code into "FLASH" Rom type memory */
+    /* Isr vectors aligned to 512 bytes so we can use same common functions in jumping. */
+    /* Cortex-M0 does not need this per se. */
+    
   .isr_vector :
   {
-    . = ALIGN(4);
+    . = ALIGN(512);
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
   } >FLASH_BOOTLOADER
