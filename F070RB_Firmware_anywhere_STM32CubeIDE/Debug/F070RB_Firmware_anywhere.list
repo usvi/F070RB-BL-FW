@@ -39,15 +39,15 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  17 .debug_macro  0000f6b6  00000000  00000000  00029c18  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_line   00009bb7  00000000  00000000  000392ce  2**0
+ 18 .debug_line   00009be5  00000000  00000000  000392ce  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .debug_str    0006022a  00000000  00000000  00042e85  2**0
+ 19 .debug_str    0006022a  00000000  00000000  00042eb3  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 20 .comment      00000053  00000000  00000000  000a30af  2**0
+ 20 .comment      00000053  00000000  00000000  000a30dd  2**0
                   CONTENTS, READONLY
- 21 .debug_ranges 00000810  00000000  00000000  000a3108  2**3
+ 21 .debug_ranges 00000810  00000000  00000000  000a3130  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 22 .debug_frame  00001ee4  00000000  00000000  000a3918  2**2
+ 22 .debug_frame  00001ee4  00000000  00000000  000a3940  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -1004,7 +1004,8 @@ Reset_Handler:
  80005dc:	484c      	ldr	r0, [pc, #304]	; (8000710 <LoopForever+0x4>)
   mov   sp, r0          /* set stack pointer */
  80005de:	4685      	mov	sp, r0
-
+// Only allow inlined build:
+#ifdef FW_ANYWHERE_STARTUP_INCLUDED
 
 
   // Store r10 passed by bootloader as gu32FirmwareAbsPosition, need to use hoop if Cortex-M0
@@ -1073,7 +1074,7 @@ Reset_Handler:
 BootloadedBootContinue:
 
 
-
+  // GOT needs to be in RAM in every case
 GlobalOffsetTableCopyPatchInit:
   movs r0, #0 // Loop variable
  8000612:	2000      	movs	r0, #0
@@ -1159,7 +1160,6 @@ GlobalOffsetTableCopyPatchEnd:
 0800064a <VectorTableCopyPatchInit>:
 
 
-
   // Need to copy and patch vector table in assembly so nobody comes to mess around
 VectorTableCopyPatchInit:
   movs r0, #0 // Loop variable
@@ -1236,8 +1236,8 @@ VectorTableLoopIncrements:
  800067c:	e7e7      	b.n	800064e <VectorTableCopyPatchLoopCond>
 
 0800067e <VectorTableCopyPatchEnd>:
-VectorTableCopyPatchEnd:
 
+VectorTableCopyPatchEnd:
 
 
 /* Copy the data segment initializers from flash to SRAM */
@@ -1313,6 +1313,10 @@ FillZerobss:
  80006b0:	42b2      	cmp	r2, r6
   beq FillZerobssSkip // If we should skip zeroing, jump away
  80006b2:	d000      	beq.n	80006b6 <FillZerobssSkip>
+  ldr r6, =gu32RamVectorTableBegin // Vector table location in RAM
+  cmp r2, r6 // Compare with what we are going to zero
+  beq FillZerobssSkip // If we should skip zeroing, jump away
+#endif /* #ifdef FW_ANYWHERE_USE_VTOR */
 
   str  r3, [r2] // If not escaped yet, make the store
  80006b4:	6013      	str	r3, [r2, #0]
@@ -1332,13 +1336,11 @@ LoopFillZerobss:
  80006ba:	d3f2      	bcc.n	80006a2 <FillZerobss>
 
 
-
-/* Call the clock system intitialization function.*/
-  bl  SystemInit
+/* Call the clock system initialization function.*/
+    bl  SystemInit
  80006bc:	f7ff ff74 	bl	80005a8 <SystemInit>
 
 080006c0 <CallPreinitsInit>:
-
 
 
 // Make our own __libc_init_array
@@ -1441,8 +1443,8 @@ CallInitsLoop:
  8000706:	e7f6      	b.n	80006f6 <CallInitsLoopCond>
 
 08000708 <CallInitsEnd>:
-CallInitsEnd:
-
+#define FW_ANYWHERE_STARTUP_INCLUDED 1
+#include "fw_anywhere_startup_inline.S"
 
 
 /* Call the application's entry point.*/
