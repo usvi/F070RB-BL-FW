@@ -7,5 +7,6 @@
 extern uint32_t gu32FirmwareAbsPosition;
 extern uint32_t gu32FirmwareOffset;
 extern uint32_t gu32FirmwareAbsOffsetChecksum;
+extern uint32_t gu32RamVectorTableBegin;
 
 #endif // #define _IMAGE_INFO_H_
