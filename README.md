@@ -8,6 +8,38 @@ Quick statuses
 
 Bootloader: **Works. Automaticly jumps to first non-empty position in firmware area.**
 
-Firmware_anywhere: **Works with all addresses sufficiently aligned when booted by bootloader. Works also standalone.**
+Firmware_anywhere: **Works with all addresses sufficiently aligned (512/0x200 bytes) when booted by bootloader. Works also standalone.**
 
-One can try for example these addresses, they should all work: 0x8005000, 0x8010000, 0x8015000, 0x801A800, 0x801B800
+(Alignment is needed only for OTHER platforms than Cortex-M0, but using alignment so we can use the same functons.)
+
+One can try for example these addresses, they should all work:
+
+0x8005000 
+
+0x8005200
+
+0x8005400
+
+0x8005600
+
+0x8005800
+
+0x8005A00
+
+0x8005C00
+
+0x8005E00
+
+0x8006000
+
+0x8006200
+
+0x8006400
+
+0x8006600
+
+0x8006800
+
+0x8006A00
+
+
