@@ -2595,7 +2595,8 @@ Discarded input sections
 Memory Configuration
 
 Name             Origin             Length             Attributes
-RAM              0x0000000020000000 0x0000000000004000 xrw
+ISR_RAM          0x0000000020000000 0x00000000000000c0 xrw
+RAM              0x00000000200000c0 0x0000000000003f40 xrw
 FLASH            0x0000000008000000 0x0000000000020000 xr
 *default*        0x0000000000000000 0xffffffffffffffff
 
@@ -2651,13 +2652,14 @@ LOAD c:/st/stm32cubeide_1.6.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.exte
                 0x0000000020004000                _estack = (ORIGIN (RAM) + LENGTH (RAM))
                 0x0000000000000200                _Min_Heap_Size = 0x200
                 0x0000000000000400                _Min_Stack_Size = 0x400
-                0x0000000020000000                __ram_begin = ORIGIN (RAM)
-                0x0000000020004000                __ram_end = (ORIGIN (RAM) + LENGTH (RAM))
+                0x0000000000020000                FLASH_FULL_LEN = 0x20000
+                0x0000000000004000                RAM_FULL_LEN = 0x4000
+                0x00000000000000c0                RAM_ISR_LEN = 0xc0
                 0x0000000008000000                __flash_begin = ORIGIN (FLASH)
                 0x0000000008020000                __flash_end = (ORIGIN (FLASH) + LENGTH (FLASH))
 
 .isr_vector     0x0000000020000000       0xc0 load address 0x0000000008000000
-                0x0000000020000000                . = ALIGN (0x200)
+                0x0000000020000000                . = ALIGN (0x4)
                 0x0000000020000000                __ram_vector_table_begin = .
  *(.isr_vector)
  .isr_vector    0x0000000020000000       0xc0 Core/Startup/startup_stm32f070rbtx.o
@@ -2665,16 +2667,18 @@ LOAD c:/st/stm32cubeide_1.6.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.exte
                 0x00000000200000c0                __ram_vector_table_end = .
                 0x00000000200000c0                . = ALIGN (0x4)
                 0x0000000008000000                __flash_vector_table_begin = LOADADDR (.isr_vector)
-                0x00000000080000c0                __flash_vector_table_end = ((__flash_vector_table_begin + __ram_vector_table_end) - __ram_vector_table_begin)
+                0x00000000080000c0                __flash_vector_table_end = (__flash_vector_table_begin + SIZEOF (.isr_vector))
+                0x0000000020000000                __ram_vector_table_begin = ADDR (.isr_vector)
+                0x00000000200000c0                __ram_vector_table_end = (__ram_vector_table_begin + SIZEOF (.isr_vector))
 
 .got            0x00000000200000c0       0x18 load address 0x00000000080000c0
                 0x00000000200000c0                . = ALIGN (0x4)
-                0x00000000200000c0                __ram_global_offset_table_begin = .
  *(.got)
  .got           0x00000000200000c0       0x18 c:/st/stm32cubeide_1.6.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.9-2020-q2-update.win32_1.5.0.202011040924/tools/bin/../lib/gcc/arm-none-eabi/9.3.1/thumb/v6-m/nofp/crtbegin.o
-                0x00000000200000d8                __ram_global_offset_table_end = .
                 0x00000000080000c0                __flash_global_offset_table_begin = LOADADDR (.got)
-                0x00000000080000d8                __flash_global_offset_table_end = ((__flash_global_offset_table_begin + __ram_global_offset_table_end) - __ram_global_offset_table_begin)
+                0x00000000080000d8                __flash_global_offset_table_end = (__flash_global_offset_table_begin + SIZEOF (.got))
+                0x00000000200000c0                __ram_global_offset_table_begin = ADDR (.got)
+                0x00000000200000d8                __ram_global_offset_table_end = (__ram_global_offset_table_begin + SIZEOF (.got))
 
 .text           0x00000000080000d8     0x1b24
                 0x00000000080000d8                . = ALIGN (0x4)

@@ -33,54 +33,58 @@ _estack = ORIGIN(RAM) + LENGTH(RAM);	/* end of "RAM" Ram type memory */
 _Min_Heap_Size = 0x200 ;	/* required amount of heap  */
 _Min_Stack_Size = 0x400 ;	/* required amount of stack */
 
+FLASH_FULL_LEN = 128K ;
+RAM_FULL_LEN = 16K ;
+RAM_ISR_LEN = 192 ;
+
 /* Memories definition */
 MEMORY
 {
-  RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 16K
-  FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 128K
+  ISR_RAM  (xrw)  : ORIGIN = 0x20000000,  LENGTH = RAM_ISR_LEN
+  RAM      (xrw)  : ORIGIN = ORIGIN(ISR_RAM) + LENGTH(ISR_RAM), LENGTH = RAM_FULL_LEN - LENGTH(ISR_RAM)
+  FLASH     (rx)  : ORIGIN = 0x8000000,  LENGTH = FLASH_FULL_LEN
 }
 
-__ram_begin = ORIGIN(RAM) ;
-__ram_end = ORIGIN(RAM) + LENGTH(RAM) ;
 __flash_begin = ORIGIN(FLASH) ;
 __flash_end = ORIGIN(FLASH) + LENGTH(FLASH) ;
 
 /* Sections */
 SECTIONS
 {
-  /* Interrupt vector table is at RAM, must be loaded by ourselves from flash. */
-  /* There is not such strict alignment requirement as Cortex-M0 does not have VTOR. */
+  /* Interrupt vector (ISR) table is forced to ISR_RAM, the first bytes of RAM, */
+  /* must be copied by ourselves from flash. Behaviour is platform-dependent    */
+  /* because some platforms have Vector Table Offset Register (VTOR).           */
+  /*                                                                            */
+  /* Cortex-M0: No VTOR, basically does not need to be aligned                  */
+  /* Cortex-M4: VTOR, so needs to be aligned to ISR vector table size in RAM.   */
+  /*                                                                            */
+  /* BUT when ISR vector table is placed randomly in flash, but always          */
+  /* relocated to a dedicated fully aligned location in RAM, it works always.   */ 
+
   .isr_vector :
   {
-    /* Isr vectors aligned to 512 bytes so we can use same common functions in jumping. */
-    /* Cortex-M0 does not need this per se. */
-
-    . = ALIGN(512);
+    . = ALIGN(4);
     __ram_vector_table_begin = . ;
     KEEP(*(.isr_vector))
     __ram_vector_table_end = . ;
     . = ALIGN(4);
-  } >RAM AT> FLASH
-  /*  Check how LOADADDR behaves after we but stuff in the beginning */
+  } >ISR_RAM AT> FLASH
   __flash_vector_table_begin = LOADADDR(.isr_vector) ;
-  __flash_vector_table_end = __flash_vector_table_begin + __ram_vector_table_end - __ram_vector_table_begin ;
+  __flash_vector_table_end = __flash_vector_table_begin + SIZEOF(.isr_vector) ;
+  __ram_vector_table_begin = ADDR(.isr_vector) ;
+  __ram_vector_table_end = __ram_vector_table_begin + SIZEOF(.isr_vector) ;
   
 
-  /*
-   * Global Offset Table, aka. GOT, can run from flash or RAM. Running
-   * from RAM requires additional setup which is described in Inc/pic_conf.h
-   */
-  
-  /* Global Offset Table is relocated to RAM. */
+  /* Global Offset Table is relocated to regular RAM. No alignment constraints. */
   .got :
   {
     . = ALIGN(4);
-    __ram_global_offset_table_begin = . ;
     *(.got)
-    __ram_global_offset_table_end = . ;
   } >RAM AT> FLASH
   __flash_global_offset_table_begin = LOADADDR(.got) ;
-  __flash_global_offset_table_end = __flash_global_offset_table_begin + __ram_global_offset_table_end - __ram_global_offset_table_begin ;
+  __flash_global_offset_table_end = __flash_global_offset_table_begin + SIZEOF(.got) ;
+  __ram_global_offset_table_begin = ADDR(.got) ;
+  __ram_global_offset_table_end = __ram_global_offset_table_begin + SIZEOF(.got) ;
 
       
   /* The program code and other data into "FLASH" Rom type memory */
